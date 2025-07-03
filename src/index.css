@@ -1,0 +1,460 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  body {
+    @apply bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300;
+    height: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  #root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Custom scrollbar for entire portal */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded-full transition-all duration-200;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-500;
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-300, #d1d5db) var(--color-gray-100, #f3f4f6);
+  }
+
+  .dark * {
+    scrollbar-color: var(--color-gray-600, #4b5563) var(--color-gray-800, #1f2937);
+  }
+
+  /* Smooth scrolling for all elements */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+  
+  /* Scroll animation styles */
+  .scrolling-gpu {
+    -webkit-overflow-scrolling: touch;
+    will-change: transform;
+  }
+
+  /* Scroll margin for section navigation */
+  section[id] {
+    scroll-margin-top: 6rem;
+  }
+  
+  h1[id], h2[id], h3[id], h4[id], h5[id], h6[id] {
+    scroll-margin-top: 6rem;
+  }
+  
+  /* Remove focus outlines for mouse, preserve for keyboard */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  
+  /* Ensure focus visible works properly */
+  :focus-visible {
+    @apply outline outline-2 outline-primary-500 outline-offset-2;
+  }
+  
+  /* Prevent scrolling during transitions */
+  .scroll-lock {
+    overflow: hidden !important;
+    height: 100% !important;
+    touch-action: none !important;
+  }
+  
+  /* Fix for Swagger UI scrolling issues */
+  .swagger-ui .opblock-body {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  .swagger-ui .responses-wrapper {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  .swagger-ui .model-box {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  .swagger-ui .model-container {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  
+  .swagger-ui section.models {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  .swagger-ui section.models.is-open {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  .swagger-ui .try-out {
+    max-height: none !important;
+  }
+  
+  .swagger-ui .execute-wrapper {
+    max-height: none !important;
+  }
+  
+  /* Improved readability for Swagger UI code blocks and examples */
+  .swagger-ui .highlight-code {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+  }
+  .dark .swagger-ui .highlight-code {
+    background-color: #000000 !important;
+    color: #f8fafc !important;
+  }
+  
+  /* Fix for request/response body text */
+  .swagger-ui .microlight {
+    font-family: monospace !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    background-color: #f8f9fa !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    line-height: 1.5 !important;
+  }
+  .dark .swagger-ui .microlight {
+    color: #f8fafc !important;
+    background-color: #000000 !important;
+    border: 1px solid #2d3748 !important;
+  }
+  
+  /* Headers and request body text */
+  .swagger-ui .opblock .opblock-section-header {
+    background-color: #f1f5f9 !important;
+  }
+  .dark .swagger-ui .opblock .opblock-section-header {
+    background-color: #000000 !important;
+    border-bottom: 1px solid #2d3748 !important;
+  }
+  .swagger-ui .opblock .opblock-section-header h4 {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+  }
+  .dark .swagger-ui .opblock .opblock-section-header h4 {
+    color: #38bdf8 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Request body editor */
+  .swagger-ui .body-param__text {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+    font-family: monospace !important;
+    font-size: 14px !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .dark .swagger-ui .body-param__text {
+    background-color: #000000 !important;
+    color: #f8fafc !important;
+    border: 1px solid #2d3748 !important;
+  }
+  
+  /* JSON syntax highlighting */
+  .swagger-ui .microlight .headerline,
+  .swagger-ui .microlight .string,
+  .swagger-ui .microlight .literal,
+  .swagger-ui .microlight .number {
+    color: #0550ae !important;
+  }
+  .dark .swagger-ui .microlight .headerline,
+  .dark .swagger-ui .microlight .string,
+  .dark .swagger-ui .microlight .literal,
+  .dark .swagger-ui .microlight .number {
+    color: #38bdf8 !important;
+  }
+  .swagger-ui .microlight .pun,
+  .swagger-ui .microlight .opn,
+  .swagger-ui .microlight .clo {
+    color: #475569 !important;
+  }
+  .dark .swagger-ui .microlight .pun,
+  .dark .swagger-ui .microlight .opn,
+  .dark .swagger-ui .microlight .clo {
+    color: #94a3b8 !important;
+  }
+  .swagger-ui .microlight .kwd {
+    color: #0f766e !important;
+  }
+  .dark .swagger-ui .microlight .kwd {
+    color: #4ade80 !important;
+  }
+  
+  /* Request/Response sections */
+  .swagger-ui .request-body {
+    margin: 20px 0 !important;
+  }
+  
+  .swagger-ui .response {
+    margin: 16px 0 !important;
+  }
+  
+  .swagger-ui .response-col_status {
+    font-weight: 600 !important;
+  }
+  .dark .swagger-ui .response-col_status {
+    color: #f59e0b !important;
+  }
+  
+  .swagger-ui .response-col_description__inner p {
+    font-size: 14px !important;
+    margin: 8px 0 !important;
+  }
+  .dark .swagger-ui .response-col_description__inner p {
+    color: #f8fafc !important;
+  }
+  
+  .swagger-ui table {
+    margin: 10px 0 !important;
+  }
+  
+  .swagger-ui table tbody tr td {
+    padding: 10px !important;
+    vertical-align: top !important;
+  }
+  
+  .dark .swagger-ui table tbody tr td {
+    color: #f8fafc !important;
+    border-color: #2d3748 !important;
+  }
+  
+  /* Swagger UI Buttons and Controls */
+  .dark .swagger-ui .btn {
+    background-color: #000000 !important;
+    color: #38bdf8 !important;
+    border: 1px solid #2d3748 !important;
+  }
+  
+  .dark .swagger-ui .btn:hover {
+    background-color: #111111 !important;
+  }
+  
+  .dark .swagger-ui .btn.execute {
+    background-color: #166534 !important;
+    color: white !important;
+  }
+  
+  .dark .swagger-ui .btn.execute:hover {
+    background-color: #15803d !important;
+  }
+  
+  .dark .swagger-ui .opblock-summary {
+    border-color: #2d3748 !important;
+  }
+  
+  .dark .swagger-ui .opblock {
+    background: #111111 !important;
+    border-color: #2d3748 !important;
+  }
+  
+  /* Additional dark mode styles for form controls */
+  .dark .swagger-ui select {
+    background-color: #000000 !important;
+    color: #f8fafc !important;
+    border-color: #2d3748 !important;
+  }
+  
+  .dark .swagger-ui input[type="text"],
+  .dark .swagger-ui input[type="password"],
+  .dark .swagger-ui input[type="search"],
+  .dark .swagger-ui input[type="email"],
+  .dark .swagger-ui input[type="number"] {
+    background-color: #000000 !important;
+    color: #f8fafc !important;
+    border-color: #2d3748 !important;
+  }
+  
+  .dark .swagger-ui textarea {
+    background-color: #000000 !important;
+    color: #f8fafc !important;
+    border-color: #2d3748 !important;
+  }
+  
+  .dark .swagger-ui .model {
+    color: #f8fafc !important;
+  }
+  
+  .dark .swagger-ui .model-title {
+    color: #38bdf8 !important;
+  }
+  
+  .dark .swagger-ui .response-col_description {
+    color: #f8fafc !important;
+  }
+  
+  .dark .swagger-ui table thead tr td, 
+  .dark .swagger-ui table thead tr th {
+    color: #f8fafc !important;
+    border-bottom: 1px solid #2d3748 !important;
+    background-color: #111111 !important;
+  }
+  
+  .dark .swagger-ui .parameters-col_description {
+    color: #f8fafc !important;
+  }
+  
+  .dark .swagger-ui .markdown p, 
+  .dark .swagger-ui .markdown pre, 
+  .dark .swagger-ui .renderedMarkdown p, 
+  .dark .swagger-ui .renderedMarkdown pre {
+    color: #f8fafc !important;
+  }
+  
+  .dark .swagger-ui .parameter__name {
+    color: #38bdf8 !important;
+  }
+  
+  .dark .swagger-ui .parameter__type {
+    color: #4ade80 !important;
+  }
+  
+  .dark .swagger-ui .parameter__deprecated {
+    color: #f87171 !important;
+  }
+  
+  .dark .swagger-ui .parameter__in {
+    color: #94a3b8 !important;
+  }
+}
+
+@layer components {
+  .code-block {
+    @apply bg-gray-100 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto;
+  }
+  
+  .nav-item {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+  }
+  
+  .nav-item:hover {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+  
+  .nav-item.active {
+    @apply bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+
+  /* Scroll reveal animations */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal-on-scroll.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-stagger-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .reveal-stagger-item.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Swagger UI specific styles */
+  .swagger-wrapper {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+} 
+
+/* Flip Card Animation Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.hover\:rotate-y-180:hover {
+  transform: rotateY(180deg);
+}
+
+/* Ensure the flip animation is smooth on all devices */
+@media (prefers-reduced-motion: no-preference) {
+  .flip-card-inner {
+    transition: transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+}
+
+/* Fix for flip card visibility */
+.flip-card-front {
+  z-index: 2;
+}
+
+.flip-card-back {
+  z-index: 1;
+}
+
+.flip-card-inner:hover .flip-card-front {
+  z-index: 1;
+}
+
+.flip-card-inner:hover .flip-card-back {
+  z-index: 2;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+  .flip-card {
+    height: 240px;
+  }
+} 

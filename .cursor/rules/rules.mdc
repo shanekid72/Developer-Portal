@@ -1,0 +1,22 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Use functional React components only; no class components.
+Use React hooks (e.g., useState, useEffect) for state management.
+Use axios for API requests; handle errors gracefully.
+Use Tailwind CSS for styling.
+Organize code with this structure:
+   - src/components/ → shared and UI components
+   - src/pages/ → page-level components
+   - src/api/ → API utility functions (if any)
+Include proper error handling and display error messages in the UI.
+When adding API Reference / Try It functionality, integrate Swagger UI React.
+Prefer OpenAPI format for API documentation.
+Use async/await syntax for all asynchronous operations.
+Use descriptive variable and function names; follow camelCase for JS.
+Keep components clean and modular; limit file length where reasonable.
+Include comments (JSDoc style) for exported functions and components.
+Make sure sample API request and response JSON are clearly displayed in the UI.
+

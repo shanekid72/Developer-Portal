@@ -1,0 +1,11 @@
+Display API documentation generated from an OpenAPI specification, with clear navigation and endpoint details.
+
+
+Include code samples that users can view and copy.
+
+
+Provide a “Try It” button where partners can input parameters, execute API requests to a sandbox environment, and see the response.
+
+
+Have a clean, responsive user interface with easy navigation and a results panel for API responses.
+Al;so have country selection option

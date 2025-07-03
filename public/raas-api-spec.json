@@ -1,0 +1,988 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "RaaS (Remittance as a Service) API",
+    "description": "API documentation for the Remittance as a Service platform",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://drap-sandbox.digitnine.com",
+      "description": "Sandbox Environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Codes and Master",
+      "description": "Reference data endpoints"
+    },
+    {
+      "name": "Transactions",
+      "description": "Transaction management endpoints"
+    },
+    {
+      "name": "Customer",
+      "description": "Customer management endpoints"
+    }
+  ],
+  "paths": {
+    "/auth/realms/cdp/protocol/openid-connect/token": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Get access token",
+        "description": "Authenticate and get an access token for API access",
+        "operationId": "getAccessToken",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "testagentae"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "Admin@123"
+                  },
+                  "grant_type": {
+                    "type": "string",
+                    "example": "password"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "example": "cdp_app"
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "example": "mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y"
+                  }
+                },
+                "required": ["username", "password", "grant_type", "client_id", "client_secret"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "expires_in": {
+                      "type": "integer"
+                    },
+                    "refresh_expires_in": {
+                      "type": "integer"
+                    },
+                    "refresh_token": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/raas/masters/v1/codes": {
+      "get": {
+        "tags": ["Codes and Master"],
+        "summary": "Get Codes",
+        "description": "Retrieve reference codes for the system",
+        "operationId": "getCodes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/raas/masters/v1/service-corridor": {
+      "get": {
+        "tags": ["Codes and Master"],
+        "summary": "Get Service Corridor",
+        "description": "Retrieve available service corridors for remittance",
+        "operationId": "getServiceCorridor",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/raas/masters/v1/rates": {
+      "get": {
+        "tags": ["Codes and Master"],
+        "summary": "Get Rates",
+        "description": "Retrieve current exchange rates",
+        "operationId": "getRates",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/raas/masters/v1/banks": {
+      "get": {
+        "tags": ["Codes and Master"],
+        "summary": "Master Banks",
+        "description": "Retrieve list of available banks",
+        "operationId": "getMasterBanks",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "receiving_country_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "PK"
+            }
+          },
+          {
+            "name": "receiving_mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "CASHPICKUP"
+            }
+          },
+          {
+            "name": "correspondent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "RR"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/raas/masters/v1/banks/{bank_id}": {
+      "get": {
+        "tags": ["Codes and Master"],
+        "summary": "Master Banks - ID",
+        "description": "Retrieve bank details by ID",
+        "operationId": "getMasterBankById",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bank_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "11232"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/amr/ras/api/v1_0/ras/quote": {
+      "post": {
+        "tags": ["Transactions"],
+        "summary": "Create Quote",
+        "description": "Create a quote for a remittance transaction",
+        "operationId": "createQuote",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sending_country_code": {
+                    "type": "string",
+                    "example": "AE"
+                  },
+                  "sending_currency_code": {
+                    "type": "string",
+                    "example": "AED"
+                  },
+                  "receiving_country_code": {
+                    "type": "string",
+                    "example": "PK"
+                  },
+                  "receiving_currency_code": {
+                    "type": "string",
+                    "example": "PKR"
+                  },
+                  "sending_amount": {
+                    "type": "number",
+                    "example": 300
+                  },
+                  "receiving_mode": {
+                    "type": "string",
+                    "example": "BANK"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "SEND"
+                  },
+                  "instrument": {
+                    "type": "string",
+                    "example": "REMITTANCE"
+                  }
+                },
+                "required": [
+                  "sending_country_code",
+                  "sending_currency_code",
+                  "receiving_country_code",
+                  "receiving_currency_code",
+                  "sending_amount",
+                  "receiving_mode",
+                  "type",
+                  "instrument"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "quote_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/amr/ras/api/v1_0/ras/createtransaction": {
+      "post": {
+        "tags": ["Transactions"],
+        "summary": "Create Transaction",
+        "description": "Create a remittance transaction",
+        "operationId": "createTransaction",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "SEND"
+                  },
+                  "source_of_income": {
+                    "type": "string",
+                    "example": "SLRY"
+                  },
+                  "purpose_of_txn": {
+                    "type": "string",
+                    "example": "SAVG"
+                  },
+                  "instrument": {
+                    "type": "string",
+                    "example": "REMITTANCE"
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Agency transaction"
+                  },
+                  "sender": {
+                    "type": "object",
+                    "properties": {
+                      "customer_number": {
+                        "type": "string",
+                        "example": "7841001220007002"
+                      }
+                    }
+                  },
+                  "receiver": {
+                    "type": "object",
+                    "properties": {
+                      "mobile_number": {
+                        "type": "string",
+                        "example": "+919586741508"
+                      },
+                      "first_name": {
+                        "type": "string",
+                        "example": "Anija FirstName"
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "example": "Anija Lastname"
+                      },
+                      "nationality": {
+                        "type": "string",
+                        "example": "IN"
+                      },
+                      "relation_code": {
+                        "type": "string",
+                        "example": "32"
+                      },
+                      "bank_details": {
+                        "type": "object",
+                        "properties": {
+                          "account_type_code": {
+                            "type": "string",
+                            "example": "1"
+                          },
+                          "iso_code": {
+                            "type": "string",
+                            "example": "BKIPPKKA"
+                          },
+                          "iban": {
+                            "type": "string",
+                            "example": "PK12ABCD1234567891234567"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "transaction": {
+                    "type": "object",
+                    "properties": {
+                      "quote_id": {
+                        "type": "string",
+                        "example": "{{quote_id}}"
+                      },
+                      "agent_transaction_ref_number": {
+                        "type": "string",
+                        "example": "{{quote_id}}"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction_ref_number": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/amr/ras/api/v1_0/ras/confirmtransaction": {
+      "post": {
+        "tags": ["Transactions"],
+        "summary": "Confirm Transaction",
+        "description": "Confirm a created transaction",
+        "operationId": "confirmTransaction",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_ref_number": {
+                    "type": "string",
+                    "example": "{{transaction_ref_number}}"
+                  }
+                },
+                "required": ["transaction_ref_number"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/amr/ras/api/v1_0/ras/enquire-transaction": {
+      "get": {
+        "tags": ["Transactions"],
+        "summary": "Enquire Transaction",
+        "description": "Get details of a transaction",
+        "operationId": "enquireTransaction",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "transaction_ref_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "{{transaction_ref_number}}"
+            }
+          },
+          {
+            "name": "sender",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "784826"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/caas/api/v2/customer/validate": {
+      "post": {
+        "tags": ["Customer"],
+        "summary": "Validate Customer",
+        "description": "Validate customer identity",
+        "operationId": "validateCustomer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idNumber": {
+                    "type": "string",
+                    "example": "784199554586091"
+                  },
+                  "idType": {
+                    "type": "string",
+                    "example": "4"
+                  }
+                },
+                "required": ["idNumber", "idType"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/caas/api/v2/customer/{customer_id}": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get Customer",
+        "description": "Get customer details by ID",
+        "operationId": "getCustomer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "7841003235214285"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+} 
