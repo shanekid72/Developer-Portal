@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Copy, Play, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import ScrollRevealContainer from '../components/ScrollRevealContainer';
 import clsx from 'clsx';
-import { makeApiCall, authenticate } from '../api/apiClient';
+
+// Base URL for direct API calls
+const API_BASE_URL = 'https://drap-sandbox.digitnine.com';
 
 const SandboxTestingPage = () => {
   const [activeTab, setActiveTab] = useState('authentication');
@@ -13,15 +15,6 @@ const SandboxTestingPage = () => {
   const [responseData, setResponseData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Base URL for the API
-  const BASE_URL = 'https://drap-sandbox.digitnine.com';
-  
-  // CORS proxy to help with cross-origin requests
-  const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
-  
-  // Flag to enable/disable the CORS proxy (can be toggled for debugging)
-  const USE_CORS_PROXY = true;
 
   // Endpoint categories based on the Postman collection
   const endpointCategories = [
@@ -216,46 +209,13 @@ const SandboxTestingPage = () => {
           }
         }
       ]
-    },
-    {
-      id: 'customer',
-      title: 'Customer Management',
-      description: 'Validate and manage customer information',
-      endpoints: [
-        {
-          id: 'validate-customer',
-          name: 'Validate Customer',
-          method: 'POST',
-          url: '/caas/api/v2/customer/validate',
-          description: 'Validate customer identity',
-          requestBody: {
-            idNumber: '784199554586091',
-            idType: '4'
-          },
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        },
-        {
-          id: 'get-customer',
-          name: 'Get Customer',
-          method: 'GET',
-          url: '/caas/api/v2/customer/7841003235214285',
-          description: 'Get customer details by ID',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      ]
     }
   ];
 
   const handleCopyToken = () => {
-    if (accessToken) {
-      navigator.clipboard.writeText(accessToken);
-      setIsTokenCopied(true);
-      setTimeout(() => setIsTokenCopied(false), 2000);
-    }
+    navigator.clipboard.writeText(accessToken);
+    setIsTokenCopied(true);
+    setTimeout(() => setIsTokenCopied(false), 2000);
   };
 
   const handleEndpointClick = (endpointId: string) => {
@@ -263,14 +223,18 @@ const SandboxTestingPage = () => {
       setActiveEndpoint(null);
     } else {
       setActiveEndpoint(endpointId);
-      // Find the endpoint and set its request body as the current one
-      for (const category of endpointCategories) {
-        const endpoint = category.endpoints.find(e => e.id === endpointId);
-        if (endpoint) {
-          // Use type assertion to handle the requestBody property
-          const endpointWithBody = endpoint as { requestBody?: Record<string, any> };
-          setRequestBody(endpointWithBody.requestBody || {});
-          break;
+      
+      // Find the endpoint and set initial request body if it exists
+      const category = endpointCategories.find(cat => 
+        cat.endpoints.some(ep => ep.id === endpointId)
+      );
+      
+      if (category) {
+        const endpoint = category.endpoints.find(ep => ep.id === endpointId);
+        if (endpoint && 'requestBody' in endpoint) {
+          setRequestBody(endpoint.requestBody);
+        } else {
+          setRequestBody({});
         }
       }
     }
@@ -278,94 +242,109 @@ const SandboxTestingPage = () => {
 
   const handleRequestBodyChange = (value: string) => {
     try {
-      setRequestBody(JSON.parse(value));
-      setError(null);
+      const parsedValue = JSON.parse(value);
+      setRequestBody(parsedValue);
     } catch (err) {
-      setError('Invalid JSON format');
+      console.error('Invalid JSON:', err);
+      // Don't update state if JSON is invalid
     }
   };
 
+  // Modified handleSendRequest function to use direct fetch calls
   const handleSendRequest = async (endpoint: any) => {
     setIsLoading(true);
     setError(null);
     setResponseData(null);
 
     try {
-      // Prepare the API call based on the endpoint
-      const url = `${BASE_URL}${endpoint.url}`;
-      let response;
-
       // Set up headers
-      const headers = { ...endpoint.headers };
+      const headers: Record<string, string> = { ...endpoint.headers };
       
       // Add authorization header if we have an access token and it's not the auth endpoint
       if (accessToken && endpoint.id !== 'keycloak') {
         headers['Authorization'] = `Bearer ${accessToken}`;
       }
 
+      // Full URL for the API call
+      const url = `${API_BASE_URL}${endpoint.url}`;
+      
       console.log(`Making ${endpoint.method} request to ${url}`);
       console.log('Headers:', headers);
-      
-      // Make the API call based on the HTTP method
-      switch (endpoint.method) {
-        case 'GET':
-          // Handle query parameters for GET requests
-          let queryUrl = url;
-          if (endpoint.queryParams) {
-            const queryString = Object.entries(endpoint.queryParams)
-              .map(([key, value]) => `${key}=${value}`)
-              .join('&');
-            queryUrl = `${url}?${queryString}`;
-          }
-          console.log('GET request to:', queryUrl);
-          response = await axios.get(queryUrl, { headers });
-          break;
 
-        case 'POST':
-          // For auth endpoint, handle form data differently
-          if (endpoint.id === 'keycloak') {
-            const formData = new URLSearchParams();
-            for (const [key, value] of Object.entries(endpoint.requestBody || {})) {
-              formData.append(key, value as string);
-            }
-            console.log('POST form data:', Object.fromEntries(formData));
-            response = await axios.post(url, formData, { headers });
-            
-            // Save the access token if this is the auth endpoint
-            if (response.data && response.data.access_token) {
-              setAccessToken(response.data.access_token);
-            }
-          } else {
-            console.log('POST JSON body:', requestBody);
-            response = await axios.post(url, requestBody, { headers });
-          }
-          break;
+      let response;
 
-        case 'PUT':
-          console.log('PUT request body:', requestBody);
-          response = await axios.put(url, requestBody, { headers });
-          break;
-
-        case 'DELETE':
-          response = await axios.delete(url, { headers });
-          break;
-
-        default:
-          throw new Error(`Unsupported HTTP method: ${endpoint.method}`);
+      // Handle authentication endpoint specially
+      if (endpoint.id === 'keycloak') {
+        // Convert credentials to form data for authentication
+        const formData = new URLSearchParams();
+        for (const [key, value] of Object.entries(endpoint.requestBody)) {
+          formData.append(key, value as string);
+        }
+        
+        // Make direct fetch call for authentication
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Save the access token if this is the auth endpoint
+        if (data && data.access_token) {
+          setAccessToken(data.access_token);
+        }
+        
+        // Set the response data
+        setResponseData(data);
+      } else {
+        // For all other endpoints
+        const method = endpoint.method;
+        
+        // Add query parameters for GET requests
+        let fullUrl = url;
+        if (method === 'GET' && endpoint.queryParams) {
+          const queryString = Object.entries(endpoint.queryParams)
+            .map(([key, value]) => `${key}=${encodeURIComponent(value as string)}`)
+            .join('&');
+          fullUrl = `${url}?${queryString}`;
+        }
+        
+        // Prepare fetch options
+        const options: RequestInit = {
+          method,
+          headers,
+          mode: 'cors'
+        };
+        
+        // Add body for POST/PUT requests
+        if (method === 'POST' || method === 'PUT') {
+          const body = JSON.stringify(requestBody);
+          options.body = body;
+          console.log(`${method} body:`, body);
+        }
+        
+        // Make direct fetch call
+        response = await fetch(fullUrl, options);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setResponseData(data);
       }
 
-      console.log('Response received:', response.data);
-      
-      // Set the response data
-      setResponseData(response.data);
+      console.log('Response received:', responseData);
     } catch (err: any) {
       console.error('API call error:', err);
-      setError(
-        err.response 
-          ? `Error: ${err.response.status} - ${err.response.statusText}` 
-          : err.message || 'An error occurred while processing your request'
-      );
-      setResponseData(err.response ? err.response.data : null);
+      setError(err.message || 'An error occurred while processing your request');
     } finally {
       setIsLoading(false);
     }
@@ -520,69 +499,64 @@ const SandboxTestingPage = () => {
                           </div>
                         </div>
 
-                        {/* Headers */}
-                        {endpoint.headers && (
+                        {/* Request Body Editor (for POST/PUT) */}
+                        {(endpoint.method === 'POST' || endpoint.method === 'PUT') && 'requestBody' in endpoint && (
                           <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headers</h4>
-                            <div className="bg-gray-100 dark:bg-gray-750 rounded p-2 overflow-x-auto">
-                              <pre className="text-xs text-gray-800 dark:text-gray-300">
-                                {JSON.stringify(endpoint.headers, null, 2)}
-                              </pre>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Request Body */}
-                        {(endpoint.method === 'POST' || endpoint.method === 'PUT') && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Request Body</h4>
+                            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Request Body</h3>
                             <div className="relative">
                               <textarea
-                                className="w-full h-40 p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-750 text-gray-800 dark:text-gray-300 font-mono text-sm"
                                 value={JSON.stringify(requestBody, null, 2)}
                                 onChange={(e) => handleRequestBodyChange(e.target.value)}
+                                className="w-full h-40 font-mono text-sm p-3 bg-gray-100 dark:bg-gray-750 border border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:border-blue-500"
                               />
-                              {error && (
-                                <div className="absolute top-2 right-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                                  {error}
-                                </div>
-                              )}
                             </div>
                           </div>
                         )}
 
-                        {/* Send Button */}
+                        {/* Headers */}
+                        <div className="mb-4">
+                          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headers</h3>
+                          <div className="bg-gray-100 dark:bg-gray-750 rounded p-2">
+                            <code className="text-xs text-gray-800 dark:text-gray-300 whitespace-pre">
+                              {JSON.stringify(endpoint.headers, null, 2)}
+                            </code>
+                          </div>
+                        </div>
+
+                        {/* Send Request Button */}
                         <div className="flex justify-end">
                           <button
                             onClick={() => handleSendRequest(endpoint)}
                             disabled={isLoading}
-                            className={clsx(
-                              'flex items-center px-4 py-2 rounded text-white',
-                              isLoading 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
-                            )}
+                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                           >
                             {isLoading ? (
-                              <span>Processing...</span>
+                              <span className="inline-block animate-spin mr-2"></span>
                             ) : (
-                              <>
-                                <Play className="h-4 w-4 mr-2" />
-                                <span>Send Request</span>
-                              </>
+                              <Play className="h-4 w-4 mr-2" />
                             )}
+                            Try It
                           </button>
                         </div>
 
                         {/* Response */}
-                        {responseData && (
+                        {(responseData || error) && activeEndpoint === endpoint.id && (
                           <div className="mt-6">
-                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response</h4>
-                            <div className="bg-gray-100 dark:bg-gray-750 rounded p-2 overflow-x-auto">
-                              <pre className="text-xs text-gray-800 dark:text-gray-300">
-                                {JSON.stringify(responseData, null, 2)}
-                              </pre>
-                            </div>
+                            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response</h3>
+                            
+                            {error && (
+                              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded p-3 mb-4">
+                                <p className="text-red-800 dark:text-red-400 text-sm">{error}</p>
+                              </div>
+                            )}
+                            
+                            {responseData && (
+                              <div className="bg-gray-100 dark:bg-gray-750 rounded p-2 overflow-x-auto">
+                                <pre className="text-xs text-gray-800 dark:text-gray-300">
+                                  {JSON.stringify(responseData, null, 2)}
+                                </pre>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -594,45 +568,8 @@ const SandboxTestingPage = () => {
           </div>
         )
       ))}
-
-      {/* Environment Information */}
-      <ScrollRevealContainer>
-        <div className="mt-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Sandbox Environment
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Base URL</h3>
-              <div className="flex items-center mt-1">
-                <code className="bg-gray-100 dark:bg-gray-750 px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-300">
-                  https://drap-sandbox.digitnine.com
-                </code>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Test Credentials</h3>
-              <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-gray-750 p-3 rounded border border-gray-200 dark:border-gray-700">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Username</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300 mt-1">testagentae</p>
-                </div>
-                <div className="bg-white dark:bg-gray-750 p-3 rounded border border-gray-200 dark:border-gray-700">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Password</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300 mt-1">Admin@123</p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Note: This sandbox environment is isolated from production systems. No real transactions will be processed, and no actual money will be transferred.
-              </p>
-            </div>
-          </div>
-        </div>
-      </ScrollRevealContainer>
     </div>
   );
 };
 
-export default SandboxTestingPage; 
+export default SandboxTestingPage;

@@ -196,6 +196,56 @@ This project is licensed under the MIT License.
 
 For questions or support, please contact the development team.
 
+## Setup Instructions
+
+1. Install dependencies:
+   ```
+   npm install
+   ```
+
+2. Start the development server:
+   ```
+   npm run dev
+   ```
+
+3. Start the CORS proxy server (optional, only needed if you encounter CORS issues):
+   ```
+   node cors-server.js
+   ```
+
+## Testing API Calls
+
+To ensure API calls are visible in the browser's network tab:
+
+1. Navigate to the API Reference section
+2. Open your browser's developer tools (F12 or right-click > Inspect)
+3. Go to the Network tab
+4. Expand an API endpoint card and click the "Try It" button
+5. You should see the API call appear in the network tab
+
+If you encounter CORS issues, you can:
+
+1. Install a CORS browser extension (like "CORS Unblock" for Chrome)
+2. Use the included CORS proxy server by starting it with `node cors-server.js`
+3. Visit the test page at `/cors-test.html` to test both direct and proxied API calls
+
+## API Reference Structure
+
+The API Reference section is organized into the following categories:
+
+- Authentication
+- Codes & Masters
+- Remittance API
+- Customer API
+
+Each category contains detailed documentation for its endpoints, including request/response formats, code examples, and usage guidelines.
+
+## Development Notes
+
+- The API calls are made directly to the backend URL to ensure they appear in the network tab
+- The CORS proxy server is available for testing and development purposes
+- API endpoints are defined in the APIReferencePage.tsx file
+
 ---
 
 Built with ❤️ for developers by developers. 

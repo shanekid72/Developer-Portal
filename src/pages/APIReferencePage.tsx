@@ -2225,8 +2225,11 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
 
   const handleTryIt = async (endpoint: APIEndpoint, requestBody: string, headers: Record<string, string>) => {
     try {
-      // Create the base URL
-      const baseUrl = 'https://drap-sandbox.digitnine.com';
+      // IMPORTANT: We're using the CORS proxy server with automatic authentication
+      // The proxy server must be running with: node cors-server.cjs
+      
+      // Create the base URL - use the CORS proxy server URL
+      const baseUrl = 'http://localhost:3001/api';
       const url = `${baseUrl}${endpoint.path}`;
       
       // Prepare headers
@@ -2243,78 +2246,46 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
       
       // Add request body for non-GET requests
       if (endpoint.method !== 'GET' && requestBody) {
-        options.body = requestBody;
-      }
-      
-      // For demo purposes, we'll simulate the API call instead of making a real one
-      // In a real app, you would use: const response = await fetch(url, options);
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate a successful response
-      let responseData;
-      
-      // Check if the request body has been modified from the original
-      const isRequestBodyModified = endpoint.requestBody && requestBody !== endpoint.requestBody;
-      
-      if (isRequestBodyModified) {
-        // Generate a response based on the modified request body
-        try {
-          // Try to parse the request body as JSON to include in the response
-          const parsedRequestBody = JSON.parse(requestBody);
-          
-          // Create a dynamic response that reflects the modified request
-          responseData = JSON.stringify({
-            status: 'success',
-            status_code: '200',
-            status_message: 'Success',
-            data: {
-              // Include request-specific fields in the response
-              request_received: parsedRequestBody,
-              timestamp: new Date().toISOString(),
-              transaction_id: `TX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-              // Add some dynamic content based on the request type
-              ...(endpoint.path.includes('token') && {
-                access_token: `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.${Math.random().toString(36).substring(2, 15)}...`,
-                expires_in: 300,
-                refresh_token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${Math.random().toString(36).substring(2, 15)}...`,
-                token_type: 'bearer'
-              })
-            }
-          }, null, 2);
-        } catch (parseError) {
-          // If JSON parsing fails, create a text-based response
-          responseData = JSON.stringify({
-            status: 'success',
-            status_code: '200',
-            status_message: 'Success',
-            data: {
-              message: 'Request processed successfully',
-              request_body_received: requestBody,
-              timestamp: new Date().toISOString(),
-              transaction_id: `TX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
-            }
-          }, null, 2);
-        }
-      } else if (endpoint.responseBody) {
-        // Use the example response if available and request wasn't modified
-        responseData = endpoint.responseBody;
-      } else {
-        // Generate a generic response
-        responseData = JSON.stringify({
-          status: 'success',
-          message: 'This is a simulated response. In a production environment, this would be the actual API response.',
-          request: {
-            url,
-            method: endpoint.method,
-            headers: Object.fromEntries(requestHeaders.entries()),
-            body: endpoint.method !== 'GET' ? requestBody : undefined
+        // For token endpoint, convert JSON to form data
+        if (endpoint.path.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
+          try {
+            const bodyObj = JSON.parse(requestBody);
+            const formData = new URLSearchParams();
+            Object.entries(bodyObj).forEach(([key, value]) => {
+              formData.append(key, value as string);
+            });
+            options.body = formData;
+            requestHeaders.set('Content-Type', 'application/x-www-form-urlencoded');
+          } catch (e) {
+            // If not valid JSON, use as is
+            options.body = requestBody;
           }
-        }, null, 2);
+        } else {
+          // For other endpoints, use JSON
+          options.body = requestBody;
+        }
       }
       
-      return responseData;
+      console.log(`Making API call to: ${url}`, {
+        method: options.method,
+        headers: Object.fromEntries(requestHeaders.entries())
+      });
+      
+      // Make the actual API call
+      const response = await fetch(url, options);
+      
+      // Get the response text
+      const responseText = await response.text();
+      console.log('API response status:', response.status);
+      
+      // Try to parse as JSON for pretty formatting
+      try {
+        const jsonResponse = JSON.parse(responseText);
+        return JSON.stringify(jsonResponse, null, 2);
+      } catch (e) {
+        // Return as text if not JSON
+        return responseText;
+      }
     } catch (error) {
       console.error('Error making API request:', error);
       return JSON.stringify({

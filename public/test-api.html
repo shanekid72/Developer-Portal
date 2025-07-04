@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>API Test</title>
+  <script>
+    function testApiCall() {
+      const url = '/auth/realms/cdp/protocol/openid-connect/token';
+      
+      // Create form data
+      const formData = new URLSearchParams();
+      formData.append('username', 'testagentae');
+      formData.append('password', 'Admin@123');
+      formData.append('grant_type', 'password');
+      formData.append('client_id', 'cdp_app');
+      formData.append('client_secret', 'mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y');
+      
+      // Make the API call
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        document.getElementById('result').textContent = 'Error: ' + error.message;
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>API Test</h1>
+  <button onclick='testApiCall()'>Test API Call</button>
+  <pre id='result' style='margin-top: 20px; padding: 10px; background-color: #f5f5f5;'></pre>
+</body>
+</html>

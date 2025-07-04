@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Call Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1, h2 {
+      margin-top: 2rem;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 300px;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Call Test</h1>
+  <p>This page tests API calls to demonstrate what appears in the network tab.</p>
+
+  <div>
+    <h2>Direct API Call</h2>
+    <p>This will attempt to call the API directly, which might fail due to CORS restrictions.</p>
+    <button id="directCallBtn">Make Direct API Call</button>
+    <pre id="directCallResult">Results will appear here...</pre>
+  </div>
+
+  <div>
+    <h2>CORS Proxy API Call</h2>
+    <p>This will call the API through our CORS proxy server.</p>
+    <button id="proxyCallBtn">Make API Call via Proxy</button>
+    <pre id="proxyCallResult">Results will appear here...</pre>
+  </div>
+
+  <div>
+    <h2>Network Tab</h2>
+    <p>Instructions:</p>
+    <ol>
+      <li>Open your browser's developer tools (F12 or right-click > Inspect)</li>
+      <li>Go to the Network tab</li>
+      <li>Click one of the buttons above</li>
+      <li>Watch for the API call in the Network tab</li>
+    </ol>
+  </div>
+
+  <script>
+    // Direct API call
+    document.getElementById('directCallBtn').addEventListener('click', async () => {
+      const resultElement = document.getElementById('directCallResult');
+      resultElement.textContent = 'Making direct API call...';
+      
+      try {
+        const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/codes', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826'
+          }
+        });
+        
+        const data = await response.json();
+        resultElement.textContent = JSON.stringify(data, null, 2);
+        resultElement.classList.add('success');
+        resultElement.classList.remove('error');
+      } catch (error) {
+        resultElement.textContent = `Error: ${error.message}`;
+        resultElement.classList.add('error');
+        resultElement.classList.remove('success');
+        console.error('Direct API call error:', error);
+      }
+    });
+
+    // CORS Proxy API call
+    document.getElementById('proxyCallBtn').addEventListener('click', async () => {
+      const resultElement = document.getElementById('proxyCallResult');
+      resultElement.textContent = 'Making API call via proxy...';
+      
+      try {
+        const response = await fetch('http://localhost:3001/api/raas/masters/v1/codes', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826'
+          }
+        });
+        
+        const data = await response.json();
+        resultElement.textContent = JSON.stringify(data, null, 2);
+        resultElement.classList.add('success');
+        resultElement.classList.remove('error');
+      } catch (error) {
+        resultElement.textContent = `Error: ${error.message}`;
+        resultElement.classList.add('error');
+        resultElement.classList.remove('success');
+        console.error('Proxy API call error:', error);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fetch API Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; }
+    .result { margin-top: 20px; }
+    .error { color: red; }
+    .success { color: green; }
+    .info { margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Fetch API Test</h1>
+  
+  <div class="info">
+    <p>This page demonstrates API calls that will be visible in the network tab.</p>
+    <p>Open your browser's developer tools (F12) and go to the Network tab before clicking the buttons below.</p>
+  </div>
+  
+  <h2>Test Options</h2>
+  <div>
+    <button onclick="testDirectFetch()">Direct Fetch (CORS Error Expected)</button>
+    <button onclick="testCorsAnywhereProxy()">CORS Anywhere Proxy</button>
+    <button onclick="testCorsIoProxy()">CORS.io Proxy</button>
+  </div>
+  
+  <div class="result">
+    <h3>Result:</h3>
+    <pre id="result">Click a button to test API calls...</pre>
+  </div>
+  
+  <script>
+    // Test direct fetch (will likely fail due to CORS)
+    function testDirectFetch() {
+      const resultElement = document.getElementById("result");
+      resultElement.textContent = "Making direct request...";
+      resultElement.className = "";
+      
+      const url = "https://drap-sandbox.digitnine.com/auth/realms/cdp/protocol/openid-connect/token";
+      const formData = new URLSearchParams();
+      formData.append("username", "testagentae");
+      formData.append("password", "Admin@123");
+      formData.append("grant_type", "password");
+      formData.append("client_id", "cdp_app");
+      formData.append("client_secret", "mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y");
+      
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData,
+        mode: "cors"
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        resultElement.textContent = "SUCCESS: " + JSON.stringify(data, null, 2);
+        resultElement.className = "success";
+      })
+      .catch(error => {
+        resultElement.textContent = "ERROR: " + error.message;
+        resultElement.className = "error";
+      });
+    }
+    
+    // Test with CORS Anywhere proxy
+    function testCorsAnywhereProxy() {
+      const resultElement = document.getElementById("result");
+      resultElement.textContent = "Making request through CORS Anywhere...";
+      resultElement.className = "";
+      
+      const url = "https://cors-anywhere.herokuapp.com/https://drap-sandbox.digitnine.com/auth/realms/cdp/protocol/openid-connect/token";
+      const formData = new URLSearchParams();
+      formData.append("username", "testagentae");
+      formData.append("password", "Admin@123");
+      formData.append("grant_type", "password");
+      formData.append("client_id", "cdp_app");
+      formData.append("client_secret", "mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y");
+      
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Origin": "http://localhost:3000"
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        resultElement.textContent = "SUCCESS: " + JSON.stringify(data, null, 2);
+        resultElement.className = "success";
+      })
+      .catch(error => {
+        resultElement.textContent = "ERROR: " + error.message;
+        resultElement.className = "error";
+      });
+    }
+    
+    // Test with CORS.io proxy
+    function testCorsIoProxy() {
+      const resultElement = document.getElementById("result");
+      resultElement.textContent = "Making request through CORS.io...";
+      resultElement.className = "";
+      
+      const url = "https://corsproxy.io/?https://drap-sandbox.digitnine.com/auth/realms/cdp/protocol/openid-connect/token";
+      const formData = new URLSearchParams();
+      formData.append("username", "testagentae");
+      formData.append("password", "Admin@123");
+      formData.append("grant_type", "password");
+      formData.append("client_id", "cdp_app");
+      formData.append("client_secret", "mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y");
+      
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        resultElement.textContent = "SUCCESS: " + JSON.stringify(data, null, 2);
+        resultElement.className = "success";
+      })
+      .catch(error => {
+        resultElement.textContent = "ERROR: " + error.message;
+        resultElement.className = "error";
+      });
+    }
+  </script>
+</body>
+</html>

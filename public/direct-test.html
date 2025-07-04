@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direct API Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; }
+    .result { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Direct API Test</h1>
+  <p>This page tests direct API calls to verify network visibility.</p>
+  
+  <h2>Authentication Test</h2>
+  <button onclick="testAuthentication()">Test Authentication API</button>
+  <div class="result">
+    <h3>Result:</h3>
+    <pre id="auth-result">Click the button to see results...</pre>
+  </div>
+
+  <h2>Get Codes Test</h2>
+  <button onclick="testGetCodes()">Test Get Codes API</button>
+  <div class="result">
+    <h3>Result:</h3>
+    <pre id="codes-result">Click the button to see results...</pre>
+  </div>
+
+  <script>
+    // Test Authentication API
+    function testAuthentication() {
+      const resultElement = document.getElementById("auth-result");
+      resultElement.textContent = "Making request...";
+      
+      const url = "https://corsproxy.io/?https://drap-sandbox.digitnine.com/auth/realms/cdp/protocol/openid-connect/token";
+      const formData = new URLSearchParams();
+      formData.append("username", "testagentae");
+      formData.append("password", "Admin@123");
+      formData.append("grant_type", "password");
+      formData.append("client_id", "cdp_app");
+      formData.append("client_secret", "mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y");
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        resultElement.textContent = JSON.stringify(data, null, 2);
+        // Store token for next request
+        localStorage.setItem("accessToken", data.access_token);
+      })
+      .catch(error => {
+        resultElement.textContent = `Error: ${error.message}`;
+      });
+    }
+
+    // Test Get Codes API
+    function testGetCodes() {
+      const resultElement = document.getElementById("codes-result");
+      resultElement.textContent = "Making request...";
+      
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        resultElement.textContent = "Error: Please authenticate first to get a token";
+        return;
+      }
+
+      const url = "https://corsproxy.io/?https://drap-sandbox.digitnine.com/raas/masters/v1/codes";
+      
+      fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "sender": "testagentae",
+          "channel": "Direct",
+          "company": "784825",
+          "branch": "784826"
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        resultElement.textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        resultElement.textContent = `Error: ${error.message}`;
+      });
+    }
+  </script>
+</body>
+</html>

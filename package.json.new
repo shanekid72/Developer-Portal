@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "raas-developer-portal",
   "private": true,
   "version": "0.0.0",
@@ -9,15 +9,14 @@
     "dev:prod:debug": "vite --mode production --debug",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cors-server": "node cors-server.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@tailwindcss/typography": "^0.5.16",
     "axios": "^1.10.0",
     "clsx": "^2.0.0",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
     "framer-motion": "^10.16.16",
     "gsap": "^3.12.2",
     "lucide-react": "^0.294.0",
