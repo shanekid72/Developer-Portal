@@ -240,27 +240,6 @@ const IntroductionPage = () => {
           </div>
         </section>
       </ScrollRevealContainer>
-
-      <ScrollRevealContainer>
-        <section>
-          <div className="bg-primary-50 dark:bg-primary-900 rounded-lg p-8 border border-primary-200 dark:border-primary-800">
-            <h2 className="text-2xl font-semibold text-primary-900 dark:text-primary-100 mb-4">
-              Ready to get started?
-            </h2>
-            <p className="text-primary-800 dark:text-primary-200 mb-6 text-lg">
-              Sign up for API access and begin integrating remittance functionality into your applications today.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <a href="/api-reference" className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-base font-medium transition-colors duration-200">
-                Explore the API
-              </a>
-              <a href="#" className="px-6 py-3 bg-white hover:bg-gray-50 text-primary-600 border border-primary-200 rounded-md text-base font-medium transition-colors duration-200 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-primary-400 dark:border-primary-800">
-                Contact Sales
-              </a>
-            </div>
-          </div>
-        </section>
-      </ScrollRevealContainer>
     </div>
   );
 };
