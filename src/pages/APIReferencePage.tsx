@@ -410,6 +410,114 @@ console.log(data);`
 -H "company: 784825" \\
 -H "branch: 784826" \\
 -H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/service-corridor', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+
+url = "https://drap-sandbox.digitnine.com/raas/masters/v1/service-corridor"
+headers = {
+    "Content-Type": "application/json",
+    "sender": "testagentae",
+    "channel": "Direct",
+    "company": "784825",
+    "branch": "784826",
+    "Authorization": "Bearer " + access_token
+}
+
+response = requests.get(url, headers=headers)
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/raas/masters/v1/service-corridor"))
+    .header("Content-Type", "application/json")
+    .header("sender", "testagentae")
+    .header("channel", "Direct")
+    .header("company", "784825")
+    .header("branch", "784826")
+    .header("Authorization", "Bearer " + accessToken)
+    .GET()
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using (HttpClient client = new HttpClient())
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("sender", "testagentae");
+    client.DefaultRequestHeaders.Add("channel", "Direct");
+    client.DefaultRequestHeaders.Add("company", "784825");
+    client.DefaultRequestHeaders.Add("branch", "784826");
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    HttpResponseMessage response = await client.GetAsync("https://drap-sandbox.digitnine.com/raas/masters/v1/service-corridor");
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$url = 'https://drap-sandbox.digitnine.com/raas/masters/v1/service-corridor';
+$headers = [
+    'Content-Type: application/json',
+    'sender: testagentae',
+    'channel: Direct',
+    'company: 784825',
+    'branch: 784826',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
@@ -556,6 +664,114 @@ console.log(data);`
 -H "company: 784825" \\
 -H "branch: 784826" \\
 -H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/rates', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+
+url = "https://drap-sandbox.digitnine.com/raas/masters/v1/rates"
+headers = {
+    "Content-Type": "application/json",
+    "sender": "testagentae",
+    "channel": "Direct",
+    "company": "784825",
+    "branch": "784826",
+    "Authorization": "Bearer " + access_token
+}
+
+response = requests.get(url, headers=headers)
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/raas/masters/v1/rates"))
+    .header("Content-Type", "application/json")
+    .header("sender", "testagentae")
+    .header("channel", "Direct")
+    .header("company", "784825")
+    .header("branch", "784826")
+    .header("Authorization", "Bearer " + accessToken)
+    .GET()
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using (HttpClient client = new HttpClient())
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("sender", "testagentae");
+    client.DefaultRequestHeaders.Add("channel", "Direct");
+    client.DefaultRequestHeaders.Add("company", "784825");
+    client.DefaultRequestHeaders.Add("branch", "784826");
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    HttpResponseMessage response = await client.GetAsync("https://drap-sandbox.digitnine.com/raas/masters/v1/rates");
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$url = 'https://drap-sandbox.digitnine.com/raas/masters/v1/rates';
+$headers = [
+    'Content-Type: application/json',
+    'sender: testagentae',
+    'channel: Direct',
+    'company: 784825',
+    'branch: 784826',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
@@ -612,6 +828,99 @@ console.log(data);`
               code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=PK&receiving_mode=CASHPICKUP&correspondent=RR" \\
   -H "Content-Type: application/json" \\
 -H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=PK&receiving_mode=CASHPICKUP&correspondent=RR', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+
+url = "https://drap-sandbox.digitnine.com/raas/masters/v1/banks"
+params = {
+    "receiving_country_code": "PK",
+    "receiving_mode": "CASHPICKUP",
+    "correspondent": "RR"
+}
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + access_token
+}
+
+response = requests.get(url, params=params, headers=headers)
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=PK&receiving_mode=CASHPICKUP&correspondent=RR"))
+    .header("Content-Type", "application/json")
+    .header("Authorization", "Bearer " + accessToken)
+    .GET()
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using (HttpClient client = new HttpClient())
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    HttpResponseMessage response = await client.GetAsync("https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=PK&receiving_mode=CASHPICKUP&correspondent=RR");
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$url = 'https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=PK&receiving_mode=CASHPICKUP&correspondent=RR';
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
@@ -632,7 +941,107 @@ console.log(data);`
                 ]
               }
             }
-          }]
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint returns all reference codes used throughout the system</li>
+  <li>Codes are grouped by code_type (e.g., COUNTRY, CURRENCY, PURPOSE, etc.)</li>
+  <li>The response may be large, so implement proper pagination or filtering in your UI</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent/Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Company code (provided)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Branch code (provided)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Common Code Types</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Code Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">COUNTRY</td>
+      <td class="p-2">ISO country codes (e.g., AE, IN)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">CURRENCY</td>
+      <td class="p-2">ISO currency codes (e.g., AED, INR)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">PURPOSE</td>
+      <td class="p-2">Transaction purpose codes (e.g., SLRY, SAVG)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">INCOME</td>
+      <td class="p-2">Source of income codes</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Cache the codes locally to reduce API calls</li>
+  <li>Refresh the cache periodically (e.g., daily) to ensure up-to-date data</li>
+  <li>Implement proper error handling for code retrieval failures</li>
+</ul>
+`
         },
         {
           id: 'get-bank-by-id',
@@ -658,6 +1067,99 @@ console.log(data);`
               code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/banks/11232" \\
 -H "Content-Type: application/json" \\
 -H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const bankId = '11232';
+const response = await fetch(\`https://drap-sandbox.digitnine.com/raas/masters/v1/banks/\${bankId}\`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+
+bank_id = "11232"
+url = f"https://drap-sandbox.digitnine.com/raas/masters/v1/banks/{bank_id}"
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + access_token
+}
+
+response = requests.get(url, headers=headers)
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+String bankId = "11232";
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/raas/masters/v1/banks/" + bankId))
+    .header("Content-Type", "application/json")
+    .header("Authorization", "Bearer " + accessToken)
+    .GET()
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+using (HttpClient client = new HttpClient())
+{
+    string bankId = "11232";
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    HttpResponseMessage response = await client.GetAsync($"https://drap-sandbox.digitnine.com/raas/masters/v1/banks/{bankId}");
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$bankId = '11232';
+$url = "https://drap-sandbox.digitnine.com/raas/masters/v1/banks/{$bankId}";
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
@@ -858,6 +1360,152 @@ console.log(data);`
 
 const data = await response.json();
 console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+import json
+
+url = "https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/quote"
+headers = {
+    "Content-Type": "application/json",
+    "sender": "testagentae",
+    "channel": "Direct",
+    "company": "784825",
+    "branch": "784826",
+    "Authorization": "Bearer " + access_token
+}
+payload = {
+    "sending_country_code": "AE",
+    "sending_currency_code": "AED",
+    "receiving_country_code": "PK",
+    "receiving_currency_code": "PKR",
+    "sending_amount": 300,
+    "receiving_mode": "BANK",
+    "type": "SEND",
+    "instrument": "REMITTANCE"
+}
+
+response = requests.post(url, headers=headers, data=json.dumps(payload))
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+String requestBody = """
+{
+  "sending_country_code": "AE",
+  "sending_currency_code": "AED",
+  "receiving_country_code": "PK",
+  "receiving_currency_code": "PKR",
+  "sending_amount": 300,
+  "receiving_mode": "BANK",
+  "type": "SEND",
+  "instrument": "REMITTANCE"
+}
+""";
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/quote"))
+    .header("Content-Type", "application/json")
+    .header("sender", "testagentae")
+    .header("channel", "Direct")
+    .header("company", "784825")
+    .header("branch", "784826")
+    .header("Authorization", "Bearer " + accessToken)
+    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.Json;
+
+using (HttpClient client = new HttpClient())
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("sender", "testagentae");
+    client.DefaultRequestHeaders.Add("channel", "Direct");
+    client.DefaultRequestHeaders.Add("company", "784825");
+    client.DefaultRequestHeaders.Add("branch", "784826");
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    var payload = new
+    {
+        sending_country_code = "AE",
+        sending_currency_code = "AED",
+        receiving_country_code = "PK",
+        receiving_currency_code = "PKR",
+        sending_amount = 300,
+        receiving_mode = "BANK",
+        type = "SEND",
+        instrument = "REMITTANCE"
+    };
+
+    var content = new StringContent(
+        JsonSerializer.Serialize(payload),
+        Encoding.UTF8,
+        "application/json");
+
+    HttpResponseMessage response = await client.PostAsync("https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/quote", content);
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$url = 'https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/quote';
+$headers = [
+    'Content-Type: application/json',
+    'sender: testagentae',
+    'channel: Direct',
+    'company: 784825',
+    'branch: 784826',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$payload = json_encode([
+    'sending_country_code' => 'AE',
+    'sending_currency_code' => 'AED',
+    'receiving_country_code' => 'PK',
+    'receiving_currency_code' => 'PKR',
+    'sending_amount' => 300,
+    'receiving_mode' => 'BANK',
+    'type' => 'SEND',
+    'instrument' => 'REMITTANCE'
+]);
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
@@ -1103,6 +1751,266 @@ console.log(data);`
     "agent_transaction_ref_number": "Q123456789"
   }
 }'`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const payload = {
+  type: "SEND",
+  source_of_income: "SLRY",
+  purpose_of_txn: "SAVG",
+  instrument: "REMITTANCE",
+  message: "Agency transaction",
+  sender: {
+    customer_number: "7841001220007002"
+  },
+  receiver: {
+    mobile_number: "+919586741508",
+    first_name: "Anija FirstName",
+    last_name: "Anija Lastname",
+    nationality: "IN",
+    relation_code: "32",
+    bank_details: {
+      account_type_code: "1",
+      iso_code: "BKIPPKKA",
+      iban: "PK12ABCD1234567891234567"
+    }
+  },
+  transaction: {
+    quote_id: "Q123456789",
+    agent_transaction_ref_number: "Q123456789"
+  }
+};
+
+const response = await fetch('https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/createtransaction', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  },
+  body: JSON.stringify(payload)
+});
+
+const data = await response.json();
+console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+import json
+
+url = "https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/createtransaction"
+headers = {
+    "Content-Type": "application/json",
+    "sender": "testagentae",
+    "channel": "Direct",
+    "company": "784825",
+    "branch": "784826",
+    "Authorization": "Bearer " + access_token
+}
+payload = {
+    "type": "SEND",
+    "source_of_income": "SLRY",
+    "purpose_of_txn": "SAVG",
+    "instrument": "REMITTANCE",
+    "message": "Agency transaction",
+    "sender": {
+        "customer_number": "7841001220007002"
+    },
+    "receiver": {
+        "mobile_number": "+919586741508",
+        "first_name": "Anija FirstName",
+        "last_name": "Anija Lastname",
+        "nationality": "IN",
+        "relation_code": "32",
+        "bank_details": {
+            "account_type_code": "1",
+            "iso_code": "BKIPPKKA",
+            "iban": "PK12ABCD1234567891234567"
+        }
+    },
+    "transaction": {
+        "quote_id": "Q123456789",
+        "agent_transaction_ref_number": "Q123456789"
+    }
+}
+
+response = requests.post(url, headers=headers, data=json.dumps(payload))
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+String requestBody = """
+{
+  "type": "SEND",
+  "source_of_income": "SLRY",
+  "purpose_of_txn": "SAVG",
+  "instrument": "REMITTANCE",
+  "message": "Agency transaction",
+  "sender": {
+    "customer_number": "7841001220007002"
+  },
+  "receiver": {
+    "mobile_number": "+919586741508",
+    "first_name": "Anija FirstName",
+    "last_name": "Anija Lastname",
+    "nationality": "IN",
+    "relation_code": "32",
+    "bank_details": {
+      "account_type_code": "1",
+      "iso_code": "BKIPPKKA",
+      "iban": "PK12ABCD1234567891234567"
+    }
+  },
+  "transaction": {
+    "quote_id": "Q123456789",
+    "agent_transaction_ref_number": "Q123456789"
+  }
+}
+""";
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/createtransaction"))
+    .header("Content-Type", "application/json")
+    .header("sender", "testagentae")
+    .header("channel", "Direct")
+    .header("company", "784825")
+    .header("branch", "784826")
+    .header("Authorization", "Bearer " + accessToken)
+    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.Json;
+
+using (HttpClient client = new HttpClient())
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("sender", "testagentae");
+    client.DefaultRequestHeaders.Add("channel", "Direct");
+    client.DefaultRequestHeaders.Add("company", "784825");
+    client.DefaultRequestHeaders.Add("branch", "784826");
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    var payload = new
+    {
+        type = "SEND",
+        source_of_income = "SLRY",
+        purpose_of_txn = "SAVG",
+        instrument = "REMITTANCE",
+        message = "Agency transaction",
+        sender = new
+        {
+            customer_number = "7841001220007002"
+        },
+        receiver = new
+        {
+            mobile_number = "+919586741508",
+            first_name = "Anija FirstName",
+            last_name = "Anija Lastname",
+            nationality = "IN",
+            relation_code = "32",
+            bank_details = new
+            {
+                account_type_code = "1",
+                iso_code = "BKIPPKKA",
+                iban = "PK12ABCD1234567891234567"
+            }
+        },
+        transaction = new
+        {
+            quote_id = "Q123456789",
+            agent_transaction_ref_number = "Q123456789"
+        }
+    };
+
+    var content = new StringContent(
+        JsonSerializer.Serialize(payload),
+        Encoding.UTF8,
+        "application/json");
+
+    HttpResponseMessage response = await client.PostAsync("https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/createtransaction", content);
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$url = 'https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/createtransaction';
+$headers = [
+    'Content-Type: application/json',
+    'sender: testagentae',
+    'channel: Direct',
+    'company: 784825',
+    'branch: 784826',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$payload = json_encode([
+    'type' => 'SEND',
+    'source_of_income' => 'SLRY',
+    'purpose_of_txn' => 'SAVG',
+    'instrument' => 'REMITTANCE',
+    'message' => 'Agency transaction',
+    'sender' => [
+        'customer_number' => '7841001220007002'
+    ],
+    'receiver' => [
+        'mobile_number' => '+919586741508',
+        'first_name' => 'Anija FirstName',
+        'last_name' => 'Anija Lastname',
+        'nationality' => 'IN',
+        'relation_code' => '32',
+        'bank_details' => [
+            'account_type_code' => '1',
+            'iso_code' => 'BKIPPKKA',
+            'iban' => 'PK12ABCD1234567891234567'
+        ]
+    ],
+    'transaction' => [
+        'quote_id' => 'Q123456789',
+        'agent_transaction_ref_number' => 'Q123456789'
+    ]
+]);
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
@@ -1290,6 +2198,147 @@ console.log(data);`
 -d '{
   "transaction_ref_number": "T987654321"
 }'`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const payload = {
+  transaction_ref_number: "T987654321"
+};
+
+const response = await fetch('https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/confirmtransaction', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  },
+  body: JSON.stringify(payload)
+});
+
+const data = await response.json();
+console.log(data);`
+            },
+            {
+              language: 'python',
+              label: 'Python',
+              code: `import requests
+import json
+
+url = "https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/confirmtransaction"
+headers = {
+    "Content-Type": "application/json",
+    "sender": "testagentae",
+    "channel": "Direct",
+    "company": "784825",
+    "branch": "784826",
+    "Authorization": "Bearer " + access_token
+}
+payload = {
+    "transaction_ref_number": "T987654321"
+}
+
+response = requests.post(url, headers=headers, data=json.dumps(payload))
+data = response.json()
+print(data)`
+            },
+            {
+              language: 'java',
+              label: 'Java',
+              code: `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+String requestBody = """
+{
+  "transaction_ref_number": "T987654321"
+}
+""";
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/confirmtransaction"))
+    .header("Content-Type", "application/json")
+    .header("sender", "testagentae")
+    .header("channel", "Direct")
+    .header("company", "784825")
+    .header("branch", "784826")
+    .header("Authorization", "Bearer " + accessToken)
+    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+    .build();
+
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());`
+            },
+            {
+              language: 'csharp',
+              label: 'C#',
+              code: `using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.Json;
+
+using (HttpClient client = new HttpClient())
+{
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("sender", "testagentae");
+    client.DefaultRequestHeaders.Add("channel", "Direct");
+    client.DefaultRequestHeaders.Add("company", "784825");
+    client.DefaultRequestHeaders.Add("branch", "784826");
+    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+    var payload = new
+    {
+        transaction_ref_number = "T987654321"
+    };
+
+    var content = new StringContent(
+        JsonSerializer.Serialize(payload),
+        Encoding.UTF8,
+        "application/json");
+
+    HttpResponseMessage response = await client.PostAsync("https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/confirmtransaction", content);
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine(responseBody);
+}`
+            },
+            {
+              language: 'php',
+              label: 'PHP',
+              code: `<?php
+$url = 'https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/confirmtransaction';
+$headers = [
+    'Content-Type: application/json',
+    'sender: testagentae',
+    'channel: Direct',
+    'company: 784825',
+    'branch: 784826',
+    'Authorization: Bearer ' . $accessToken
+];
+
+$payload = json_encode([
+    'transaction_ref_number' => 'T987654321'
+]);
+
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$response = curl_exec($curl);
+$data = json_decode($response, true);
+curl_close($curl);
+
+print_r($data);
+?>`
             }
           ],
           responses: [{
