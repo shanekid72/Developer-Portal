@@ -5,11 +5,11 @@ const querystring = require('querystring');
 
 const app = express();
 
-// Enable CORS for all routes
+// Enable CORS for all routes with more permissive settings
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'sender', 'channel', 'company', 'branch']
+  allowedHeaders: '*'
 }));
 
 // Middleware to parse URL-encoded bodies
@@ -45,7 +45,8 @@ async function getAuthToken() {
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        },
+        timeout: 10000 // 10 second timeout
       }
     );
 
@@ -64,6 +65,9 @@ async function getAuthToken() {
   }
 }
 
+// Handle OPTIONS requests for preflight
+app.options('*', cors());
+
 // Handle auth endpoint separately
 app.post('/api/auth/realms/cdp/protocol/openid-connect/token', async (req, res) => {
   try {
@@ -76,7 +80,8 @@ app.post('/api/auth/realms/cdp/protocol/openid-connect/token', async (req, res) 
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        },
+        timeout: 10000 // 10 second timeout
       }
     );
     
@@ -94,19 +99,113 @@ app.post('/api/auth/realms/cdp/protocol/openid-connect/token', async (req, res) 
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
-      res.status(500).json({ error: 'Authentication failed' });
+      res.status(500).json({ error: 'Authentication failed', message: error.message });
     }
   }
 });
 
-// Generic API handler for all other endpoints
-app.all('/api/*', async (req, res, next) => {
+// Special handler for quote endpoint - using specific route instead of wildcard
+app.post('/api/amr/ras/api/v1_0/ras/quote', async (req, res) => {
+  handleQuoteRequest(req, res);
+});
+
+app.get('/api/amr/ras/api/v1_0/ras/quote', async (req, res) => {
+  handleQuoteRequest(req, res);
+});
+
+// Function to handle quote requests
+async function handleQuoteRequest(req, res) {
   try {
-    // Skip authentication for auth endpoint
-    if (req.path.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
-      return next();
+    console.log(`Handling quote request: ${req.method} ${req.path}`);
+    
+    // Get auth token
+    let token;
+    try {
+      token = await getAuthToken();
+    } catch (authError) {
+      console.error('Authentication failed:', authError.message);
+      return res.status(401).json({ 
+        status: 'failure',
+        error_code: 40001,
+        message: 'Authentication failed',
+        details: { description: authError.message }
+      });
     }
     
+    // Remove /api prefix from the path
+    const targetPath = req.path.replace(/^\/api/, '');
+    const targetUrl = `https://drap-sandbox.digitnine.com${targetPath}`;
+    
+    console.log(`Forwarding quote request to: ${targetUrl}`);
+    
+    // Prepare headers
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'sender': req.headers.sender || 'testagentae',
+      'channel': req.headers.channel || 'Direct',
+      'company': req.headers.company || '784825',
+      'branch': req.headers.branch || '784826'
+    };
+    
+    // Use sample quote data for POST requests
+    const sampleQuoteData = {
+      "sending_country_code": "AE",
+      "sending_currency_code": "AED",
+      "receiving_country_code": "PK",
+      "receiving_currency_code": "PKR",
+      "sending_amount": 200,
+      "receiving_mode": "BANK",
+      "type": "SEND",
+      "instrument": "REMITTANCE"
+    };
+    
+    // Forward the request
+    let response;
+    if (req.method === 'GET') {
+      response = await axios.get(targetUrl, { 
+        headers,
+        timeout: 10000 // 10 second timeout
+      });
+    } else if (req.method === 'POST') {
+      // Use sample data if body is empty
+      const data = Object.keys(req.body || {}).length > 0 ? req.body : sampleQuoteData;
+      console.log('Quote request body:', JSON.stringify(data));
+      
+      response = await axios.post(targetUrl, data, { 
+        headers,
+        timeout: 10000 // 10 second timeout
+      });
+    } else {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+    
+    console.log(`Quote response status: ${response.status}`);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error('Error in quote endpoint:', error.message);
+    if (error.response) {
+      console.error('Error response:', error.response.status, error.response.data);
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ 
+        status: 'failure',
+        error_code: 50000,
+        message: 'Quote request failed',
+        details: { description: error.message }
+      });
+    }
+  }
+}
+
+// Handle specific transaction endpoints
+app.post('/api/amr/ras/api/v1_0/ras/createtransaction', handleGenericApiRequest);
+app.post('/api/amr/ras/api/v1_0/ras/confirmtransaction', handleGenericApiRequest);
+app.get('/api/amr/ras/api/v1_0/ras/enquire-transaction', handleGenericApiRequest);
+
+// Generic API handler function
+async function handleGenericApiRequest(req, res) {
+  try {
     console.log(`Handling API request: ${req.method} ${req.path}`);
     
     // Get auth token
@@ -144,33 +243,13 @@ app.all('/api/*', async (req, res, next) => {
       method: req.method,
       url: targetUrl,
       headers: headers,
-      validateStatus: () => true // Accept any status code
+      validateStatus: () => true, // Accept any status code
+      timeout: 10000 // 10 second timeout
     };
     
     // Add request body for non-GET requests
     if (req.method !== 'GET' && req.body) {
-      // Special handling for quote endpoint
-      if (req.path.includes('/ras/quote')) {
-        // Ensure we have a valid body for quote requests
-        if (Object.keys(req.body).length === 0) {
-          axiosConfig.data = {
-            "sending_country_code": "AE",
-            "sending_currency_code": "AED",
-            "receiving_country_code": "PK",
-            "receiving_currency_code": "PKR",
-            "sending_amount": 200,
-            "receiving_mode": "BANK",
-            "type": "SEND",
-            "instrument": "REMITTANCE"
-          };
-          console.log('Using sample quote request body');
-        } else {
-          axiosConfig.data = req.body;
-        }
-      } else {
-        // For all other endpoints
-        axiosConfig.data = req.body;
-      }
+      axiosConfig.data = req.body;
     }
     
     const response = await axios(axiosConfig);
@@ -200,6 +279,17 @@ app.all('/api/*', async (req, res, next) => {
       details: { description: error.message }
     });
   }
+}
+
+// Fallback handler for any other API routes
+app.use('/api', (req, res) => {
+  console.log(`Fallback handler for: ${req.method} ${req.path}`);
+  res.status(404).json({
+    status: 'failure',
+    error_code: 40400,
+    message: 'Endpoint not found',
+    details: { description: `No handler defined for ${req.path}` }
+  });
 });
 
 // Add a health check route
@@ -207,9 +297,20 @@ app.get('/', (req, res) => {
   res.send('CORS Proxy Server is running with automatic authentication');
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    status: 'failure',
+    error_code: 50000,
+    message: 'Internal server error',
+    details: { description: err.message }
+  });
+});
+
 // Start the server
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`CORS Proxy Server running on port ${PORT}`);
   console.log(`Access the API through: http://localhost:${PORT}/api/...`);
   console.log('This proxy automatically adds authentication tokens to API requests');

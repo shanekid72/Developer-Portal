@@ -2225,23 +2225,33 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
 
   const handleTryIt = async (endpoint: APIEndpoint, requestBody: string, headers: Record<string, string>) => {
     try {
-      // IMPORTANT: We're using the CORS proxy server with automatic authentication
-      // The proxy server must be running with: node cors-server.cjs
+      // IMPORTANT: We're using the simple HTTP proxy server with automatic authentication
+      // The proxy server must be running with: node simple-http-proxy.cjs
       
-      // Create the base URL - use the CORS proxy server URL
+      // Create the base URL - use the simple HTTP proxy server URL
       const baseUrl = 'http://localhost:3001/api';
-      const url = `${baseUrl}${endpoint.path}`;
+      
+      // Construct the full URL for the API call
+      let url = `${baseUrl}${endpoint.path}`;
+      
+      // Log the API call for debugging
+      console.log(`Making API call to: ${url}`);
       
       // Prepare headers
       const requestHeaders = new Headers();
       Object.entries(headers).forEach(([key, value]) => {
-        requestHeaders.append(key, value);
+        // Skip adding the Authorization header - the proxy will handle this
+        if (key.toLowerCase() !== 'authorization') {
+          requestHeaders.append(key, value);
+        }
       });
       
       // Prepare request options
       const options: RequestInit = {
         method: endpoint.method,
         headers: requestHeaders,
+        // Set longer timeout
+        signal: AbortSignal.timeout(30000) // 30 seconds timeout
       };
       
       // Add request body for non-GET requests
@@ -2263,13 +2273,15 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
         } else {
           // For other endpoints, use JSON
           options.body = requestBody;
+          
+          // Ensure content type is set
+          if (!requestHeaders.has('Content-Type')) {
+            requestHeaders.set('Content-Type', 'application/json');
+          }
         }
       }
       
-      console.log(`Making API call to: ${url}`, {
-        method: options.method,
-        headers: Object.fromEntries(requestHeaders.entries())
-      });
+      console.log(`Request headers:`, Object.fromEntries(requestHeaders.entries()));
       
       // Make the actual API call
       const response = await fetch(url, options);
