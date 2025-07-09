@@ -130,6 +130,7 @@ print(data["access_token"])`
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
       <th class="p-2">Name</th>
       <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
       <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
@@ -138,6 +139,7 @@ print(data["access_token"])`
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Content-Type</td>
       <td class="p-2">String</td>
+      <td class="p-2">36</td>
       <td class="p-2">Yes</td>
       <td class="p-2">application/x-www-form-urlencoded</td>
     </tr>
@@ -150,6 +152,7 @@ print(data["access_token"])`
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
       <th class="p-2">Name</th>
       <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
       <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
@@ -158,32 +161,115 @@ print(data["access_token"])`
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">grant_type</td>
       <td class="p-2">String</td>
+      <td class="p-2">10</td>
       <td class="p-2">Yes</td>
-      <td class="p-2">Must be "password"</td>
+      <td class="p-2">Grant type. Will be provided</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">scope</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Scope name. Will be provided</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">client_id</td>
       <td class="p-2">String</td>
+      <td class="p-2">60</td>
       <td class="p-2">Yes</td>
-      <td class="p-2">Provided client ID</td>
+      <td class="p-2">Client Id. Will be provided</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">client_secret</td>
       <td class="p-2">String</td>
+      <td class="p-2">60</td>
       <td class="p-2">Yes</td>
-      <td class="p-2">Provided client secret</td>
+      <td class="p-2">Client secret. Will be provided</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">username</td>
       <td class="p-2">String</td>
+      <td class="p-2">60</td>
       <td class="p-2">Yes</td>
-      <td class="p-2">Provided username</td>
+      <td class="p-2">Admin user name</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">password</td>
       <td class="p-2">String</td>
+      <td class="p-2">60</td>
       <td class="p-2">Yes</td>
-      <td class="p-2">Provided password</td>
+      <td class="p-2">Admin password</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">access_token</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Access token to access the APIs</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">expires_in</td>
+      <td class="p-2">Integer</td>
+      <td class="p-2">-</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">access_token expiry time in seconds</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">refresh_expires_in</td>
+      <td class="p-2">Integer</td>
+      <td class="p-2">-</td>
+      <td class="p-2">No</td>
+      <td class="p-2">refresh_token expiry time in seconds</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">refresh_token</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Refresh Token</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">token_type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">-</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Token type</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">not-before-policy</td>
+      <td class="p-2">Integer</td>
+      <td class="p-2">-</td>
+      <td class="p-2">-</td>
+      <td class="p-2">-</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">session_state</td>
+      <td class="p-2">String</td>
+      <td class="p-2">-</td>
+      <td class="p-2">-</td>
+      <td class="p-2">-</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">scope</td>
+      <td class="p-2">String</td>
+      <td class="p-2">-</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Scope details</td>
     </tr>
   </tbody>
 </table>
@@ -198,7 +284,6 @@ print(data["access_token"])`
 <ul>
   <li>Implement token caching to avoid unnecessary authentication requests</li>
   <li>Set up automatic token refresh before expiration</li>
-  <li>Include proper error handling for authentication failures</li>
 </ul>
 `
         }
@@ -298,6 +383,7 @@ console.log(data);`
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
       <th class="p-2">Name</th>
       <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
       <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
@@ -306,38 +392,92 @@ console.log(data);`
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Content-Type</td>
       <td class="p-2">String</td>
+      <td class="p-2">36</td>
       <td class="p-2">Yes</td>
       <td class="p-2">application/json</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">sender</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Agent/Partner name</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">channel</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Direct</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">company</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Company code (provided)</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">branch</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Branch code (provided)</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Authorization</td>
       <td class="p-2">String</td>
+      <td class="p-2">600</td>
       <td class="p-2">Yes</td>
       <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.codes</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of code objects</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.codes[].code_type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Type of code (e.g., COUNTRY, CURRENCY)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.codes[].code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Code value</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.codes[].description</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Description of the code</td>
     </tr>
   </tbody>
 </table>
@@ -556,6 +696,7 @@ print_r($data);
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
       <th class="p-2">Name</th>
       <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
       <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
@@ -564,38 +705,112 @@ print_r($data);
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Content-Type</td>
       <td class="p-2">String</td>
+      <td class="p-2">36</td>
       <td class="p-2">Yes</td>
       <td class="p-2">application/json</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">sender</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Agent/Partner name</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">channel</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Direct</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">company</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Company code (provided)</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">branch</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Branch code (provided)</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Authorization</td>
       <td class="p-2">String</td>
+      <td class="p-2">600</td>
       <td class="p-2">Yes</td>
       <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of service corridor objects</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].sending_country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character sending country code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].sending_country_name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Sending country name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].receiving_country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character receiving country code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].receiving_country_name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Receiving country name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].sending_currency_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 3-character sending currency code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].receiving_currency_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 3-character receiving currency code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.service_corridors[].receiving_modes</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of available receiving modes</td>
     </tr>
   </tbody>
 </table>
@@ -633,9 +848,10 @@ print_r($data);
 
 <h5>Best Practices</h5>
 <ul>
-  <li>Cache the service corridor data to reduce API calls</li>
-  <li>Use this data to populate country/currency selection dropdowns in your UI</li>
-  <li>Validate user selections against available corridors before proceeding with transactions</li>
+  <li>Cache service corridor data to reduce API calls</li>
+  <li>Refresh the cache periodically to ensure up-to-date information</li>
+  <li>Use this data to populate country/currency dropdowns in your UI</li>
+  <li>Filter receiving modes based on the selected corridor</li>
 </ul>
 `
         },
@@ -792,7 +1008,140 @@ print_r($data);
                 ]
               }
             }
-          }]
+          }],
+          guidelines: `
+<h5>Exchange Rate Rules</h5>
+<ul>
+  <li>This endpoint returns current exchange rates for all supported currency pairs</li>
+  <li>Rates are updated periodically throughout the day</li>
+  <li>The effective_date indicates when the rate was last updated</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.rates</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of rate objects</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.rates[].from_currency_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 3-character source currency code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.rates[].to_currency_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 3-character target currency code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.rates[].rate</td>
+      <td class="p-2">BigDecimal</td>
+      <td class="p-2">Exchange rate value</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.rates[].effective_date</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Date and time when the rate became effective</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Cache rates locally to reduce API calls</li>
+  <li>Refresh the cache periodically (e.g., hourly) to ensure up-to-date rates</li>
+  <li>Display the effective date to users so they know when the rate was last updated</li>
+  <li>Implement proper error handling for rate retrieval failures</li>
+</ul>
+`
         },
         {
           id: 'get-banks',
@@ -945,9 +1294,9 @@ print_r($data);
           guidelines: `
 <h5>API Rules</h5>
 <ul>
-  <li>This endpoint returns all reference codes used throughout the system</li>
-  <li>Codes are grouped by code_type (e.g., COUNTRY, CURRENCY, PURPOSE, etc.)</li>
-  <li>The response may be large, so implement proper pagination or filtering in your UI</li>
+  <li>This endpoint returns banks available for the specified receiving country and mode</li>
+  <li>The correspondent parameter is required for cash pickup transactions</li>
+  <li>Bank data includes identifiers needed for bank account transfers</li>
 </ul>
 
 <h5>Required Headers</h5>
@@ -956,6 +1305,7 @@ print_r($data);
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
       <th class="p-2">Name</th>
       <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
       <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
@@ -964,72 +1314,140 @@ print_r($data);
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Content-Type</td>
       <td class="p-2">String</td>
+      <td class="p-2">36</td>
       <td class="p-2">Yes</td>
       <td class="p-2">application/json</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">sender</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Agent/Partner name</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">channel</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Direct</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">company</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Company code (provided)</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">branch</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Branch code (provided)</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Authorization</td>
       <td class="p-2">String</td>
+      <td class="p-2">600</td>
       <td class="p-2">Yes</td>
       <td class="p-2">Bearer token</td>
     </tr>
   </tbody>
 </table>
 
-<h5>Common Code Types</h5>
+<h5>Required Query Parameters</h5>
 <table class="w-full text-sm">
   <thead>
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
-      <th class="p-2">Code Type</th>
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
   </thead>
   <tbody>
     <tr class="border-b border-gray-200 dark:border-gray-700">
-      <td class="p-2 font-medium">COUNTRY</td>
-      <td class="p-2">ISO country codes (e.g., AE, IN)</td>
+      <td class="p-2 font-medium">receiving_country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">2</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">ISO 2-character country code</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
-      <td class="p-2 font-medium">CURRENCY</td>
-      <td class="p-2">ISO currency codes (e.g., AED, INR)</td>
+      <td class="p-2 font-medium">receiving_mode</td>
+      <td class="p-2">String</td>
+      <td class="p-2">20</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">BANK, CASHPICKUP, WALLET, etc.</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
-      <td class="p-2 font-medium">PURPOSE</td>
-      <td class="p-2">Transaction purpose codes (e.g., SLRY, SAVG)</td>
+      <td class="p-2 font-medium">correspondent</td>
+      <td class="p-2">String</td>
+      <td class="p-2">2</td>
+      <td class="p-2">Conditional</td>
+      <td class="p-2">Required for CASHPICKUP mode</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
-      <td class="p-2 font-medium">INCOME</td>
-      <td class="p-2">Source of income codes</td>
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.banks</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of bank objects</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.banks[].id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Unique bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.banks[].name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Bank name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.banks[].swift_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">SWIFT/BIC code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.banks[].country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character country code</td>
     </tr>
   </tbody>
 </table>
 
 <h5>Error Handling</h5>
 <ul>
+  <li>400 Bad Request: Missing required parameters</li>
   <li>401 Unauthorized: Invalid or expired token</li>
   <li>403 Forbidden: Insufficient permissions</li>
   <li>500 Internal Server Error: System error</li>
@@ -1037,9 +1455,10 @@ print_r($data);
 
 <h5>Best Practices</h5>
 <ul>
-  <li>Cache the codes locally to reduce API calls</li>
-  <li>Refresh the cache periodically (e.g., daily) to ensure up-to-date data</li>
-  <li>Implement proper error handling for code retrieval failures</li>
+  <li>Cache bank data to reduce API calls</li>
+  <li>Refresh the cache periodically to ensure up-to-date information</li>
+  <li>Use this data to populate bank selection dropdowns in your UI</li>
+  <li>Implement proper error handling for bank retrieval failures</li>
 </ul>
 `
         },
@@ -1186,7 +1605,173 @@ print_r($data);
                 }
               }
             }
-          }]
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint returns detailed information about a specific bank</li>
+  <li>The bank_id path parameter is required and must be a valid bank identifier</li>
+  <li>The response includes bank details and may include branch information</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Path Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Unique bank identifier</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank</td>
+      <td class="p-2">Object</td>
+      <td class="p-2">Bank object</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank.id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Unique bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank.name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Bank name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank.swift_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">SWIFT/BIC code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank.country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character country code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank.address</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Bank address</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.bank.branches</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of branch objects (if available)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>400 Bad Request: Invalid bank ID format</li>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>404 Not Found: Bank not found</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Cache bank details to reduce API calls</li>
+  <li>Use this endpoint when you need detailed information about a specific bank</li>
+  <li>Implement proper error handling, especially for 404 responses</li>
+</ul>
+`
         }
       ]
     }
@@ -1536,6 +2121,7 @@ print_r($data);
     <tr class="text-left bg-gray-100 dark:bg-gray-800">
       <th class="p-2">Name</th>
       <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
       <th class="p-2">Mandatory</th>
       <th class="p-2">Description</th>
     </tr>
@@ -1544,31 +2130,36 @@ print_r($data);
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">Content-Type</td>
       <td class="p-2">String</td>
+      <td class="p-2">36</td>
       <td class="p-2">Yes</td>
       <td class="p-2">application/json</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">sender</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Agent/Partner name</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">channel</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
-      <td class="p-2">Direct</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">company</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
       <td class="p-2">Company code (provided)</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">branch</td>
       <td class="p-2">String</td>
-      <td class="p-2">Yes</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
       <td class="p-2">Branch code (provided)</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
@@ -1662,6 +2253,7 @@ print_r($data);
   <li>Always validate the quote before proceeding with the transaction</li>
   <li>Include proper error handling for quote creation failures</li>
   <li>Store the quote_id securely for use in the subsequent transaction creation</li>
+  <li>Check the expiry_time to ensure the quote is still valid before using it</li>
 </ul>
 `
         },
@@ -3544,6 +4136,7 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
                     pathParams={endpoint.pathParams}
                     queryParams={endpoint.queryParams}
                     codeExamples={endpoint.codeExamples}
+                    guidelines={endpoint.guidelines}
                     theme={theme}
                     onTryIt={(editableBody, editableHeaders) => handleTryIt(endpoint, editableBody, editableHeaders)}
                   />
