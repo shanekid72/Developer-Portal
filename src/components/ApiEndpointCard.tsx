@@ -29,6 +29,7 @@ interface ApiEndpointCardProps {
     code: string;
   }[];
   guidelines?: string;
+  errorCodes?: string;
   theme: Theme;
   onTryIt?: (requestBody: string, headers: Record<string, string>) => Promise<string>;
 }
@@ -45,6 +46,7 @@ const ApiEndpointCard: React.FC<ApiEndpointCardProps> = ({
   queryParams,
   codeExamples = [],
   guidelines,
+  errorCodes,
   theme,
   onTryIt,
 }) => {
@@ -235,6 +237,30 @@ const ApiEndpointCard: React.FC<ApiEndpointCardProps> = ({
                   >
                     Usage Guidelines
                   </button>
+                  {(title === 'Create Quote' || title === 'Create Transaction' || title === 'Confirm Transaction' || title === 'Enquire Transaction' || title === 'Cancel Transaction' || title === 'Transaction Receipt' || title === 'Transaction Status Update') && (
+                    <button
+                      onClick={() => setSelectedTab('errorCodes')}
+                      className={`px-3 py-2 text-sm font-medium border-b-2 ${
+                        selectedTab === 'errorCodes'
+                          ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      Error Codes
+                    </button>
+                  )}
+                  {title === 'Create Transaction' || title === 'Confirm Transaction' ? (
+                    <button
+                      onClick={() => setSelectedTab('states')}
+                      className={`px-3 py-2 text-sm font-medium border-b-2 ${
+                        selectedTab === 'states'
+                          ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      Transaction States
+                    </button>
+                  ) : null}
                 </nav>
               </div>
               
@@ -487,6 +513,994 @@ const ApiEndpointCard: React.FC<ApiEndpointCardProps> = ({
                         <p className="text-gray-500 dark:text-gray-400">No specific guidelines available for this endpoint.</p>
                       </div>
                     )}
+                  </div>
+                )}
+                
+                {/* Error Codes Tab */}
+                {selectedTab === 'errorCodes' && (
+                  <div className="space-y-6">
+                    {errorCodes ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-6">
+                          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Error Codes</h4>
+                          <div dangerouslySetInnerHTML={{ __html: errorCodes }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-6">
+                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Error Codes</h4>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                            <thead className="bg-gray-100 dark:bg-gray-700">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                  API
+                                </th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                  HTTP status code
+                                </th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                  Error Code
+                                </th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                  Message
+                                </th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                  Reason
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                              {title === 'Create Transaction' ? (
+                                <>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">Create Transaction</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Sender subscription not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Sender subscription not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Sender not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Sender not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076210</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Sender is not acceptable since valid ID not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Sender is not acceptable since valid ID not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076207</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since yet to accepted</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since yet to accepted</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridors not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridors not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridor currencies not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridor currencies not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank branch not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank branch not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Currency not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Currency not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076205</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Charge's markup/down is not acceptable</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Charge's markup/down is not acceptable</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner allowed address type not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner allowed address type not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076209</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since invalid address type</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since invalid address type</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076211</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since exceeded the credit limit</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since exceeded the credit limit</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076214</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not acceptable since invalid sender ID information</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not acceptable since invalid sender ID information</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076201</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Processed transaction for same receiver with same amount</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Processed transaction for same receiver with same amount</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076202</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since reached sender limit</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since reached sender limit</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076203</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not allowed to send amount to same receiver</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not allowed to send amount to same receiver</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076206</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since correspondent rate has changed</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since correspondent rate has changed</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076212</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote is not acceptable</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote is not acceptable</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076101</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076213</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote is not acceptable since expired</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote is not acceptable since expired</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">400</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40000</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Mismatch in quote and transaction request</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Mismatch in Quote and transaction CorrespondentId</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">400</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40000</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Mismatch in quote and transaction request</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Mismatch in Quote and transaction CorrLocationId</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076215</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since partner transaction reference number already exists</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since partner transaction reference number already exists</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076208</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since invalid sender information</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since invalid sender information</td>
+                                  </tr>
+                                </>
+                              ) : title === 'Confirm Transaction' ? (
+                                <>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">Confirm Transaction</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076306</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since expired</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since expired</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076305</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since already accepted</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since already accepted</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction sender not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction sender not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction receiver not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction receiver not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner ledger account not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner ledger account not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner call back not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner call back not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Correspondent service bank not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Correspondent service bank not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank branch not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank branch not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Purpose of the transaction not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Purpose of the transaction not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Correspondent service not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Correspondent service not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Payment mode not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Payment mode not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076302</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since clearance not accepted yet</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since clearance not accepted yet</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076304</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not authorized to generate transaction receipt</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not authorized to generate transaction receipt</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076301</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since insufficient balance</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is not acceptable since insufficient balance</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">406</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">8076218</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">The correspondent bank details do not match. Please verify the routing configurations and try again</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">The correspondent bank details do not match. Please verify the routing configurations and try again</td>
+                                  </tr>
+                                </>
+                              ) : title === 'Enquire Transaction' ? (
+                                <>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">Enquire Transaction</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction receiver not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction receiver not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction sender not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction sender not found</td>
+                                  </tr>
+                                </>
+                              ) : title === 'Cancel Transaction' ? (
+                                <>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">Cancel Transaction</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">400</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40400</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is in EXECUTED state and cannot be cancelled</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is in EXECUTED state and cannot be cancelled</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">400</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40401</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is already cancelled</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Transaction is already cancelled</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">400</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40402</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Cancellation reason is required</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Cancellation reason is required</td>
+                                  </tr>
+                                </>
+                              ) : (
+                                <>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">Create Quote</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner not found</td>
+                                  </tr>
+                                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridor currencies not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridor currencies not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank branch not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank branch not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridors not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner service corridors not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Bank not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Quote not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Correspondent service bank not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Correspondent service bank not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rates not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rates not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Currency not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Currency not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Charges not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Charges not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rebate not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rebate not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">MTO product not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">MTO product not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rate / Charges not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rate / Charges not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner quote or payment expiry limit's not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Partner quote or payment expiry limit's not found</td>
+                              </tr>
+                              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white"></td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">404</td>
+                                <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">40004</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rate / Charges not found</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Rate / Charges not found</td>
+                              </tr>
+                                </>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Transaction States Tab */}
+                {selectedTab === 'states' && (
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-6">
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Transaction States and Sub-States</h4>
+                      <div className="overflow-x-auto">
+                        {title === 'Create Transaction' ? (
+                          <>
+                            <h5 className="text-md font-medium text-gray-900 dark:text-white mb-2">Create Transaction States</h5>
+                            <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-6">
+                              <thead className="bg-gray-100 dark:bg-gray-700">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    Transaction Activity
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    State
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    Sub-State
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    Description
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                                {/* CREATE TXN States */}
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium">
+                                    CREATE TXN
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    INITIATED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    QUOTE_ACCEPTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Quote accepted for the given currency pair
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    INITIATED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    ORDER_VERIFIED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Order verified for the given details
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    ACCEPTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    ORDER_ACCEPTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Order accepted for the given verified details
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    REJECTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    ORDER_REJECTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Order rejected after verification
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            
+                            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                              <strong>Create Transaction Flow:</strong> When you call the Create Transaction API, the transaction starts in INITIATED state. 
+                              It progresses through quote acceptance and order verification, ultimately reaching either ACCEPTED or REJECTED state.
+                            </p>
+                            
+                            <h5 className="text-md font-medium text-gray-900 dark:text-white mb-2 mt-6">Complete Transaction Lifecycle</h5>
+                            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                              After successful creation and confirmation, the transaction progresses through these states:
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <h5 className="text-md font-medium text-gray-900 dark:text-white mb-2">Confirm Transaction States</h5>
+                            <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-6">
+                              <thead className="bg-gray-100 dark:bg-gray-700">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    Transaction Activity
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    State
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    Sub-State
+                                  </th>
+                                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                    Description
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                                {/* Payment Processing States */}
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium">
+                                    CONFIRM TXN
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    PAYMENT_PENDING
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Payment pending for the transaction
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    BALANCE_INSUFFICIENT
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Insufficient balance in the prefund account
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    PAYMENT_AWAIT_CLEARANCE
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Awaiting payment clearance
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    PAYMENT_SETTLED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Payment settled
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    PAYMENT_REJECTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Payment rejected
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    PAYMENT_APPROVED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Payment approved
+                                  </td>
+                                </tr>
+                                
+                                {/* AML Processing States */}
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium">
+                                    CONFIRM TXN
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    AML_PENDING
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Pending for AML
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    AML_COMPLETED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    AML completed
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    AML_MARKED_FOR_EDD
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Marked for EDD
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    AML_FAILED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    AML failed
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    CONFIRM TXN
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    AWAITING_CLEARANCE
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Awaiting AML clearance
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    CLEARANCE_ACCEPTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Clearance accepted
+                                  </td>
+                                </tr>
+                                
+                                {/* Transaction Processing States */}
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    CONFIRM TXN
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    TXN_VERIFIED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Transaction verified
+                                  </td>
+                                </tr>
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    IN_PROGRESS
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    TXN_PREPARED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    Transaction prepared
+                                  </td>
+                                </tr>
+                                
+                                {/* Rejection State */}
+                                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    CONFIRM TXN
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    REJECTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                    AML_REJECTED
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    AML rejected
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            
+                            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                              <strong>Confirm Transaction Flow:</strong> When you call the Confirm Transaction API, the transaction goes through payment processing, 
+                              AML checks, and transaction verification. It can either progress to EXECUTED state or be rejected.
+                            </p>
+                            
+                            <h5 className="text-md font-medium text-gray-900 dark:text-white mb-2 mt-6">Post-Confirmation States</h5>
+                            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                              After successful confirmation, the transaction progresses through these states:
+                            </p>
+                          </>
+                        )}
+                        
+                        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                          <thead className="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                Transaction Activity
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                State
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                Sub-State
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+                                Description
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                            {/* EXECUTED States */}
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                                EXECUTED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                EXECUTED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                TXN_RELEASED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                Transaction released
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                EXECUTED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                TXN_TRANSMITTED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                Transaction transmitted
+                              </td>
+                            </tr>
+                            
+                            {/* COMPLETED States */}
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">
+                                CREDITED*
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                COMPLETED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                CREDITED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                Transaction credited
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                COMPLETED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                AVAILABLE_PAID
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                Transaction Available for pickup or Paid
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                COMPLETED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                RECONCILED
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                Transaction reconciled
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        
+                        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                          <strong>Note:</strong> States marked in green (EXECUTED, CREDITED*) indicate successful transaction progression. 
+                          The transaction lifecycle typically follows: CREATE TXN → CONFIRM TXN → EXECUTED → COMPLETED.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

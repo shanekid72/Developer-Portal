@@ -7,6 +7,85 @@ import ApiEndpointCard from '../components/ApiEndpointCard';
 import clsx from 'clsx';
 import { Theme } from '../types';
 
+// Quote management functions
+let currentQuoteId = localStorage.getItem('raas_quote_id') || '';
+
+const getQuoteId = () => {
+  const quoteId = localStorage.getItem('raas_quote_id') || '';
+  currentQuoteId = quoteId;
+  return quoteId;
+};
+
+const setQuoteId = (quoteId: string) => {
+  currentQuoteId = quoteId;
+  localStorage.setItem('raas_quote_id', quoteId);
+  console.log('💾 Quote ID saved to localStorage:', quoteId);
+};
+
+const clearQuoteId = () => {
+  currentQuoteId = '';
+  localStorage.removeItem('raas_quote_id');
+  console.log('🗑️ Quote ID cleared from localStorage');
+};
+
+// Function to automatically create a quote
+const createQuoteAutomatically = async () => {
+  try {
+    console.log('🔄 Automatically creating quote...');
+    
+    const baseUrl = 'http://localhost:3001/api';
+    const url = `${baseUrl}/amr/ras/api/v1_0/ras/quote`;
+    
+    const quoteRequestBody = {
+      "sending_country_code": "AE",
+      "sending_currency_code": "AED",
+      "receiving_country_code": "PK",
+      "receiving_currency_code": "PKR",
+      "sending_amount": 300,
+      "receiving_mode": "BANK",
+      "type": "SEND",
+      "instrument": "REMITTANCE"
+    };
+    
+    const token = localStorage.getItem('raas_access_token');
+    if (!token) {
+      throw new Error('No access token available');
+    }
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'sender': 'testagentae',
+        'channel': 'Direct',
+        'company': '784825',
+        'branch': '784826'
+      },
+      body: JSON.stringify(quoteRequestBody)
+    });
+    
+    const responseText = await response.text();
+    console.log('📋 Quote creation response status:', response.status);
+    
+    if (response.ok) {
+      const jsonResponse = JSON.parse(responseText);
+      if (jsonResponse.data && jsonResponse.data.quote_id) {
+        setQuoteId(jsonResponse.data.quote_id);
+        console.log('✅ Quote created successfully with ID:', jsonResponse.data.quote_id);
+        return jsonResponse.data.quote_id;
+      } else {
+        throw new Error('Quote ID not found in response');
+      }
+    } else {
+      throw new Error(`Quote creation failed: ${response.status} - ${responseText}`);
+    }
+  } catch (error) {
+    console.error('❌ Error creating quote automatically:', error);
+    throw error;
+  }
+};
+
 interface APIReferencePageProps {
   theme: Theme;
 }
@@ -1463,19 +1542,19 @@ print_r($data);
 `
         },
         {
-          id: 'get-bank-by-id',
-          title: 'Master Banks - ID',
+          id: 'get-bank-master',
+          title: 'Get Bank Master',
           method: 'GET',
-          path: '/raas/masters/v1/banks/{bank_id}',
+          path: '/raas/masters/v1/banks',
           description: 'Retrieve bank details by ID',
           requestHeaders: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer {{access_token}}'
           },
-          pathParams: [
+          queryParams: [
             {
-              name: 'bank_id',
-              description: 'The unique identifier of the bank',
+              name: 'receiving_country_code',
+              description: 'The country code for which to retrieve banks',
               required: true
             }
           ],
@@ -1483,15 +1562,15 @@ print_r($data);
             {
               language: 'curl',
               label: 'cURL',
-              code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/banks/11232" \\
+              code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=PK" \\
 -H "Content-Type: application/json" \\
 -H "Authorization: Bearer {{access_token}}"`
             },
             {
               language: 'javascript',
               label: 'JavaScript',
-              code: `const bankId = '11232';
-const response = await fetch(\`https://drap-sandbox.digitnine.com/raas/masters/v1/banks/\${bankId}\`, {
+              code: `const receivingCountryCode = 'PK';
+const response = await fetch(\`https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=\${receivingCountryCode}\`, {
   method: 'GET',
   headers: {
     'Content-Type': 'application/json',
@@ -1507,8 +1586,8 @@ console.log(data);`
               label: 'Python',
               code: `import requests
 
-bank_id = "11232"
-url = f"https://drap-sandbox.digitnine.com/raas/masters/v1/banks/{bank_id}"
+receiving_country_code = "PK"
+url = f"https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code={receiving_country_code}"
 headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + access_token
@@ -1526,10 +1605,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-String bankId = "11232";
+String receivingCountryCode = "PK";
 HttpClient client = HttpClient.newHttpClient();
 HttpRequest request = HttpRequest.newBuilder()
-    .uri(URI.create("https://drap-sandbox.digitnine.com/raas/masters/v1/banks/" + bankId))
+    .uri(URI.create("https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code=" + receivingCountryCode))
     .header("Content-Type", "application/json")
     .header("Authorization", "Bearer " + accessToken)
     .GET()
@@ -1548,11 +1627,11 @@ using System.Threading.Tasks;
 
 using (HttpClient client = new HttpClient())
 {
-    string bankId = "11232";
+    string receivingCountryCode = "PK";
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
 
-    HttpResponseMessage response = await client.GetAsync($"https://drap-sandbox.digitnine.com/raas/masters/v1/banks/{bankId}");
+    HttpResponseMessage response = await client.GetAsync($"https://drap-sandbox.digitnine.com/raas/masters/v1/banks?receiving_country_code={receivingCountryCode}");
     string responseBody = await response.Content.ReadAsStringAsync();
     Console.WriteLine(responseBody);
 }`
@@ -1772,6 +1851,1267 @@ print_r($data);
   <li>Implement proper error handling, especially for 404 responses</li>
 </ul>
 `
+        },
+        {
+          id: 'get-branch-master',
+          title: 'Get Branch Master',
+          method: 'GET',
+          path: '/raas/masters/v1/branches',
+          description: 'Retrieve list of available branches',
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          queryParams: [
+            {
+              name: 'bank_id',
+              description: 'The unique identifier of the bank',
+              required: true
+            }
+          ],
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/branches?bank_id=11232" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const bankId = '11232';
+const response = await fetch(\`https://drap-sandbox.digitnine.com/raas/masters/v1/branches?bank_id=\${bankId}\`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Success',
+              data: {
+                branches: [
+                  {
+                    id: '22345',
+                    name: 'Main Branch',
+                    code: 'MB001',
+                    bank_id: '11232',
+                    address: '123 Main Street, Karachi',
+                    city: 'Karachi',
+                    state: 'Sindh',
+                    country_code: 'PK'
+                  }
+                ]
+              }
+            }
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint returns branches for the specified bank ID</li>
+  <li>Branch data includes identifiers needed for bank account transfers</li>
+  <li>The bank_id parameter must be provided to retrieve the relevant branches</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Required Query Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">10</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Unique bank identifier</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of branch objects</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Unique branch identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].address</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch address</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].city</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch city</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].state</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch state/province</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character country code</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>400 Bad Request: Missing required parameters</li>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>404 Not Found: Bank ID not found</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Cache branch data to reduce API calls</li>
+  <li>Refresh the cache periodically to ensure up-to-date information</li>
+  <li>Use this data to populate branch selection dropdowns in your UI</li>
+  <li>Implement proper error handling for branch retrieval failures</li>
+</ul>
+`
+        },
+        {
+          id: 'get-branch-by-id',
+          title: 'Get Branch By Id',
+          method: 'GET',
+          path: '/raas/masters/v1/branches/{branch_id}',
+          description: 'Retrieve branch details by ID',
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          pathParams: [
+            {
+              name: 'branch_id',
+              description: 'The unique identifier of the branch',
+              required: true
+            }
+          ],
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/branches/22345" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const branchId = '22345';
+const response = await fetch(\`https://drap-sandbox.digitnine.com/raas/masters/v1/branches/\${branchId}\`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Success',
+              data: {
+                branch: {
+                  id: '22345',
+                  name: 'Main Branch',
+                  code: 'MB001',
+                  bank_id: '11232',
+                  address: '123 Main Street, Karachi',
+                  city: 'Karachi',
+                  state: 'Sindh',
+                  country_code: 'PK'
+                }
+              }
+            }
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint returns details for a specific branch by its ID</li>
+  <li>The branch_id must be provided in the URL path</li>
+  <li>Use this endpoint when you need detailed information about a specific branch</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Path Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">10</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Unique branch identifier</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch</td>
+      <td class="p-2">Object</td>
+      <td class="p-2">Branch object</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Unique branch identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.address</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch address</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.city</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch city</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.state</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch state/province</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branch.country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character country code</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>404 Not Found: Branch ID not found</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Cache branch details to reduce API calls</li>
+  <li>Refresh the cache periodically to ensure up-to-date information</li>
+  <li>Use this endpoint when you need specific branch details after selecting from a list</li>
+  <li>Implement proper error handling for branch retrieval failures</li>
+</ul>
+`
+        },
+        {
+          id: 'branch-search',
+          title: 'Branch Search',
+          method: 'GET',
+          path: '/raas/masters/v1/branches/search',
+          description: 'Search for branches by name or other criteria',
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          queryParams: [
+            {
+              name: 'bank_id',
+              description: 'The unique identifier of the bank',
+              required: true
+            },
+            {
+              name: 'search_term',
+              description: 'Search term to find branches by name or code',
+              required: false
+            },
+            {
+              name: 'city',
+              description: 'Filter branches by city',
+              required: false
+            }
+          ],
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/branches/search?bank_id=11232&search_term=main&city=karachi" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const bankId = '11232';
+const searchTerm = 'main';
+const city = 'karachi';
+const response = await fetch(\`https://drap-sandbox.digitnine.com/raas/masters/v1/branches/search?bank_id=\${bankId}&search_term=\${searchTerm}&city=\${city}\`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Success',
+              data: {
+                branches: [
+                  {
+                    id: '22345',
+                    name: 'Main Branch',
+                    code: 'MB001',
+                    bank_id: '11232',
+                    address: '123 Main Street, Karachi',
+                    city: 'Karachi',
+                    state: 'Sindh',
+                    country_code: 'PK'
+                  }
+                ]
+              }
+            }
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint allows searching for branches based on various criteria</li>
+  <li>The bank_id parameter is required to limit the search to a specific bank</li>
+  <li>The search_term parameter is optional and can be used to search by branch name or code</li>
+  <li>The city parameter is optional and can be used to filter branches by city</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Query Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">10</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Unique bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">search_term</td>
+      <td class="p-2">String</td>
+      <td class="p-2">50</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Search term for branch name or code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">city</td>
+      <td class="p-2">String</td>
+      <td class="p-2">50</td>
+      <td class="p-2">No</td>
+      <td class="p-2">City name to filter branches</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches</td>
+      <td class="p-2">Array</td>
+      <td class="p-2">Array of branch objects</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Unique branch identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].address</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch address</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].city</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch city</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].state</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Branch state/province</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.branches[].country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 2-character country code</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>400 Bad Request: Missing required parameters</li>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>404 Not Found: Bank ID not found</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Use this endpoint to implement a search feature in your UI</li>
+  <li>Implement typeahead/autocomplete functionality for better user experience</li>
+  <li>Cache search results to reduce API calls</li>
+  <li>Implement proper error handling for search failures</li>
+</ul>
+`
+        },
+        {
+          id: 'account-validation',
+          title: 'Account Validation',
+          method: 'POST',
+          path: '/raas/masters/v1/account/validate',
+          description: 'Validate bank account details',
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          requestBody: `{
+  "bank_id": "11232",
+  "branch_id": "22345",
+  "account_number": "1234567890",
+  "account_type": "SAVINGS",
+  "country_code": "PK"
+}`,
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X POST "https://drap-sandbox.digitnine.com/raas/masters/v1/account/validate" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}" \\
+-d '{
+  "bank_id": "11232",
+  "branch_id": "22345",
+  "account_number": "1234567890",
+  "account_type": "SAVINGS",
+  "country_code": "PK"
+}'`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const requestBody = {
+  bank_id: '11232',
+  branch_id: '22345',
+  account_number: '1234567890',
+  account_type: 'SAVINGS',
+  country_code: 'PK'
+};
+
+const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/account/validate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  },
+  body: JSON.stringify(requestBody)
+});
+
+const data = await response.json();
+console.log(data);`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful validation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Success',
+              data: {
+                is_valid: true,
+                account_holder_name: 'John Smith',
+                account_status: 'ACTIVE',
+                validation_reference: 'VAL123456789'
+              }
+            }
+          }, {
+            status: 400,
+            description: 'Invalid account details',
+            example: {
+              status: 'error',
+              status_code: '400',
+              status_message: 'Invalid account details',
+              error_code: '40001',
+              error_message: 'Account number is invalid or does not exist'
+            }
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint validates bank account details before initiating a transaction</li>
+  <li>The validation checks if the account exists and is active</li>
+  <li>The response includes the account holder name if validation is successful</li>
+  <li>A validation reference is returned for audit and tracking purposes</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Request Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">bank_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">10</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Unique bank identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">10</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Unique branch identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">account_number</td>
+      <td class="p-2">String</td>
+      <td class="p-2">20</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bank account number</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">account_type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">10</td>
+      <td class="p-2">No</td>
+      <td class="p-2">SAVINGS, CHECKING, etc.</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">country_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">2</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">ISO 2-character country code</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.is_valid</td>
+      <td class="p-2">Boolean</td>
+      <td class="p-2">Whether the account is valid</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.account_holder_name</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Name of the account holder</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.account_status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ACTIVE, INACTIVE, BLOCKED, etc.</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.validation_reference</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Reference ID for the validation</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">error_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Error code (for error responses)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">error_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Error description (for error responses)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>400 Bad Request: Invalid account details or missing required parameters</li>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>404 Not Found: Bank or branch not found</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Validate accounts before initiating transactions to reduce failed transactions</li>
+  <li>Display validation errors to users in a user-friendly manner</li>
+  <li>Store the validation reference for future reference</li>
+  <li>Implement proper error handling for validation failures</li>
+</ul>
+`
+        },
+        {
+          id: 'get-agent-credit-balance',
+          title: 'Get Agent Credit Balance',
+          method: 'GET',
+          path: '/raas/masters/v1/agent/credit-balance',
+          description: 'Retrieve agent credit balance information',
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X GET "https://drap-sandbox.digitnine.com/raas/masters/v1/agent/credit-balance" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}"`
+            },
+            {
+              language: 'javascript',
+              label: 'JavaScript',
+              code: `const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/agent/credit-balance', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'sender': 'testagentae',
+    'channel': 'Direct',
+    'company': '784825',
+    'branch': '784826',
+    'Authorization': 'Bearer ' + accessToken
+  }
+});
+
+const data = await response.json();
+console.log(data);`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Success',
+              data: {
+                agent_id: 'testagentae',
+                credit_balance: 50000.00,
+                currency_code: 'AED',
+                last_updated: '2023-11-01T12:30:45Z'
+              }
+            }
+          }],
+          guidelines: `
+<h5>API Rules</h5>
+<ul>
+  <li>This endpoint returns the current credit balance for the authenticated agent</li>
+  <li>The credit balance is in the agent's base currency</li>
+  <li>The last_updated field indicates when the balance was last updated</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Max Length</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">36</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">60</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent / Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">30</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Ripple / Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">6</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Will be shared</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">600</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Response Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Success or failure status</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">HTTP status code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_message</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Status description</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.agent_id</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Agent identifier</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.credit_balance</td>
+      <td class="p-2">BigDecimal</td>
+      <td class="p-2">Current credit balance</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.currency_code</td>
+      <td class="p-2">String</td>
+      <td class="p-2">ISO 3-character currency code</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">data.last_updated</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Timestamp of last balance update</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>403 Forbidden: Insufficient permissions</li>
+  <li>404 Not Found: Agent not found</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Check the credit balance before initiating transactions to ensure sufficient funds</li>
+  <li>Display the credit balance in your UI for better user experience</li>
+  <li>Implement proper error handling for balance retrieval failures</li>
+  <li>Consider implementing automatic balance refresh after transactions</li>
+</ul>
+`
         }
       ]
     }
@@ -1788,6 +3128,7 @@ print_r($data);
           method: 'POST',
           path: '/amr/ras/api/v1_0/ras/quote',
           description: 'Create a quote for a remittance transaction',
+          errorCodes: ``,
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -2222,7 +3563,7 @@ print_r($data);
       <td class="p-2 font-medium">type</td>
       <td class="p-2">String</td>
       <td class="p-2">Yes</td>
-      <td class="p-2">SEND or RECEIVE</td>
+      <td class="p-2">SEND</td>
     </tr>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">instrument</td>
@@ -2263,6 +3604,7 @@ print_r($data);
           method: 'POST',
           path: '/amr/ras/api/v1_0/ras/createtransaction',
           description: 'Create a remittance transaction',
+          errorCodes: ``,
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -2719,6 +4061,145 @@ print_r($data);
       <td class="p-2">Conditional</td>
       <td class="p-2">Required for bank transfers</td>
     </tr>
+  </tbody>
+</table>
+
+<h5>Create Transaction States and Sub-States</h5>
+<p class="mb-4">The following table shows the states and sub-states specific to the Create Transaction API:</p>
+
+<table class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden mb-6">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Transaction Activity</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Sub-State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">CREATE TXN</td>
+      <td class="p-2">INITIATED</td>
+      <td class="p-2">QUOTE_ACCEPTED</td>
+      <td class="p-2">Quote accepted for the given currency pair</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">INITIATED</td>
+      <td class="p-2">ORDER_VERIFIED</td>
+      <td class="p-2">Order verified for the given details</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">ACCEPTED</td>
+      <td class="p-2">ORDER_ACCEPTED</td>
+      <td class="p-2">Order accepted for the given verified details</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">REJECTED</td>
+      <td class="p-2">ORDER_REJECTED</td>
+      <td class="p-2">Order rejected after verification</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+  <strong>Create Transaction Flow:</strong> When you call the Create Transaction API, the transaction starts in INITIATED state. 
+  It progresses through quote acceptance and order verification, ultimately reaching either ACCEPTED or REJECTED state.
+</p>
+
+<h5>Complete Transaction Lifecycle</h5>
+<p class="mb-4">The following table shows the complete transaction lifecycle after Create and Confirm operations:</p>
+
+<table class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden mb-6">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Transaction Activity</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Sub-State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- EXECUTED States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium text-green-600 dark:text-green-400">EXECUTED</td>
+      <td class="p-2">EXECUTED</td>
+      <td class="p-2">TXN_RELEASED</td>
+      <td class="p-2">Transaction released</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">EXECUTED</td>
+      <td class="p-2">TXN_TRANSMITTED</td>
+      <td class="p-2">Transaction transmitted</td>
+    </tr>
+    
+    <!-- COMPLETED States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium text-green-600 dark:text-green-400">CREDITED*</td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">CREDITED</td>
+      <td class="p-2">Transaction credited</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">AVAILABLE_PAID</td>
+      <td class="p-2">Transaction Available for pickup or Paid</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">RECONCILED</td>
+      <td class="p-2">Transaction reconciled</td>
+    </tr>
+    
+    <!-- CANCELLATION States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">CANCELLATION</td>
+      <td class="p-2">INITIATED</td>
+      <td class="p-2">CANCELLATION_INITIATED</td>
+      <td class="p-2">Initiated transaction cancellation</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">CANCELLATION</td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">CANCELLATION_REQUEST_CREATED</td>
+      <td class="p-2">Cancellation request created with payout partner</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">CANCELLATION_REQUEST_CONFIRMED</td>
+      <td class="p-2">Cancellation request confirmed by the payout partner</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">REJECTED</td>
+      <td class="p-2">CANCELLATION_REQUEST_REJECTED</td>
+      <td class="p-2">Cancellation request is rejected by the payout partner</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">ACCEPTED</td>
+      <td class="p-2">CANCELLATION_ACCEPTED</td>
+      <td class="p-2">Cancellation of transaction accepted</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">CANCELLATION_COMPLETED</td>
+      <td class="p-2">Cancellation of transaction completed</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+  <strong>Complete Transaction Flow:</strong> CREATE TXN → CONFIRM TXN → EXECUTED → COMPLETED. 
+  States marked in green (EXECUTED, CREDITED*) indicate successful transaction progression.
+</p>
     <tr class="border-b border-gray-200 dark:border-gray-700">
       <td class="p-2 font-medium">transaction.quote_id</td>
       <td class="p-2">String</td>
@@ -2757,6 +4238,7 @@ print_r($data);
           method: 'POST',
           path: '/amr/ras/api/v1_0/ras/confirmtransaction',
           description: 'Confirm a created transaction',
+          errorCodes: ``,
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -3014,6 +4496,663 @@ print_r($data);
   <li>Confirm transactions as soon as possible after creation</li>
   <li>Verify transaction status after confirmation using the Enquire Transaction endpoint</li>
 </ul>
+
+<h5>Confirm Transaction States and Sub-States</h5>
+<p class="mb-4">The following table shows the states and sub-states specific to the Confirm Transaction API:</p>
+
+<table class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden mb-6">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Transaction Activity</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Sub-State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Payment Processing States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">CONFIRM TXN</td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">PAYMENT_PENDING</td>
+      <td class="p-2">Payment pending for the transaction</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">BALANCE_INSUFFICIENT</td>
+      <td class="p-2">Insufficient balance in the prefund account</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">PAYMENT_AWAIT_CLEARANCE</td>
+      <td class="p-2">Awaiting payment clearance</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">PAYMENT_SETTLED</td>
+      <td class="p-2">Payment settled</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">PAYMENT_REJECTED</td>
+      <td class="p-2">Payment rejected</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">PAYMENT_APPROVED</td>
+      <td class="p-2">Payment approved</td>
+    </tr>
+    
+    <!-- AML Processing States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">CONFIRM TXN</td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">AML_PENDING</td>
+      <td class="p-2">Pending for AML</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">AML_COMPLETED</td>
+      <td class="p-2">AML completed</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">AML_MARKED_FOR_EDD</td>
+      <td class="p-2">Marked for EDD</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">AML_FAILED</td>
+      <td class="p-2">AML failed</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">CONFIRM TXN</td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">AWAITING_CLEARANCE</td>
+      <td class="p-2">Awaiting AML clearance</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">CLEARANCE_ACCEPTED</td>
+      <td class="p-2">Clearance accepted</td>
+    </tr>
+    
+    <!-- Transaction Processing States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">CONFIRM TXN</td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">TXN_VERIFIED</td>
+      <td class="p-2">Transaction verified</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">IN_PROGRESS</td>
+      <td class="p-2">TXN_PREPARED</td>
+      <td class="p-2">Transaction prepared</td>
+    </tr>
+    
+    <!-- Rejection State -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">CONFIRM TXN</td>
+      <td class="p-2">REJECTED</td>
+      <td class="p-2">AML_REJECTED</td>
+      <td class="p-2">AML rejected</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+  <strong>Confirm Transaction Flow:</strong> When you call the Confirm Transaction API, the transaction goes through payment processing, 
+  AML checks, and transaction verification. It can either progress to EXECUTED state or be rejected.
+</p>
+
+<h5>Post-Confirmation States</h5>
+<p class="mb-4">After successful confirmation, the transaction progresses through these states:</p>
+
+<table class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden mb-6">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Transaction Activity</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Sub-State</th>
+      <th class="p-2 border-b border-gray-200 dark:border-gray-600">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- EXECUTED States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium text-green-600 dark:text-green-400">EXECUTED</td>
+      <td class="p-2">EXECUTED</td>
+      <td class="p-2">TXN_RELEASED</td>
+      <td class="p-2">Transaction released</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">EXECUTED</td>
+      <td class="p-2">TXN_TRANSMITTED</td>
+      <td class="p-2">Transaction transmitted</td>
+    </tr>
+    
+    <!-- COMPLETED States -->
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium text-green-600 dark:text-green-400">CREDITED*</td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">CREDITED</td>
+      <td class="p-2">Transaction credited</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">AVAILABLE_PAID</td>
+      <td class="p-2">Transaction Available for pickup or Paid</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2"></td>
+      <td class="p-2">COMPLETED</td>
+      <td class="p-2">RECONCILED</td>
+      <td class="p-2">Transaction reconciled</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+  <strong>Complete Flow:</strong> CONFIRM TXN → EXECUTED → COMPLETED. 
+  States marked in green (EXECUTED, CREDITED*) indicate successful transaction progression.
+</p>
+`
+        },
+        {
+          id: 'cancel-transaction',
+          title: 'Cancel Transaction',
+          method: 'POST',
+          path: '/amr/ras/api/v1_0/ras/canceltransaction',
+          description: 'Cancel a remittance transaction',
+          errorCodes: ``,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          requestBody: `{
+  "transaction_ref_number": "T987654321",
+  "cancellation_reason": "Customer request"
+}`,
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X POST "https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/canceltransaction" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}" \\
+-d '{
+  "transaction_ref_number": "T987654321",
+  "cancellation_reason": "Customer request"
+}'`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Transaction cancelled successfully',
+              data: {
+                transaction_ref_number: 'T987654321',
+                cancellation_date: '2023-11-01T14:30:45Z',
+                status: 'CANCELLED'
+              }
+            }
+          },
+          {
+            status: 400,
+            description: 'Bad request',
+            example: {
+              status: 'error',
+              status_code: '400',
+              status_message: 'Transaction cannot be cancelled',
+              error_code: '40400',
+              error_message: 'Transaction is in EXECUTED state and cannot be cancelled'
+            }
+          }],
+          guidelines: `
+<h5>Cancellation Rules</h5>
+<ul>
+  <li>Transactions can only be cancelled before they reach the EXECUTED state</li>
+  <li>A valid reason must be provided for cancellation</li>
+  <li>Once cancelled, a transaction cannot be reactivated</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent/Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Request Body Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">transaction_ref_number</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Transaction reference number</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">cancellation_reason</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Reason for cancellation</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Cancellation States</h5>
+<p class="mb-4">After cancellation, the transaction will be in one of these states:</p>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Status</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">CANCELLED</td>
+      <td class="p-2">Transaction has been cancelled</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">REFUNDED</td>
+      <td class="p-2">Transaction has been cancelled and funds refunded</td>
+    </tr>
+  </tbody>
+</table>
+`
+        },
+        {
+          id: 'transaction-receipt',
+          title: 'Transaction Receipt',
+          method: 'GET',
+          path: '/amr/ras/api/v1_0/ras/transaction-receipt',
+          description: 'Get receipt for a completed transaction',
+          errorCodes: ``,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          queryParams: [
+            {
+              name: 'transaction_ref_number',
+              description: 'Transaction reference number',
+              required: true
+            }
+          ],
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X GET "https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/transaction-receipt?transaction_ref_number=T987654321" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}"`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Receipt generated successfully',
+              data: {
+                transaction_ref_number: 'T987654321',
+                receipt_number: 'RCP12345678',
+                transaction_date: '2023-11-01T14:30:45Z',
+                sender_name: 'John Doe',
+                receiver_name: 'Jane Smith',
+                amount: '1000.00',
+                currency: 'USD',
+                exchange_rate: '3.67',
+                fees: '10.00',
+                total_amount: '1010.00',
+                payment_method: 'Bank Transfer',
+                status: 'COMPLETED',
+                receipt_url: 'https://drap-sandbox.digitnine.com/receipts/RCP12345678.pdf'
+              }
+            }
+          },
+          {
+            status: 404,
+            description: 'Transaction not found',
+            example: {
+              status: 'error',
+              status_code: '404',
+              status_message: 'Transaction not found',
+              error_code: '40004',
+              error_message: 'No transaction found with the provided reference number'
+            }
+          }],
+          guidelines: `
+<h5>Receipt Generation Rules</h5>
+<ul>
+  <li>Receipts are only available for transactions in COMPLETED state</li>
+  <li>The receipt contains all transaction details including sender, receiver, amounts, and fees</li>
+  <li>Receipts can be downloaded as PDF documents</li>
+  <li>Receipts are available for up to 7 years after transaction completion</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent/Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Query Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">transaction_ref_number</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Transaction reference number</td>
+    </tr>
+  </tbody>
+</table>
+`
+        },
+        {
+          id: 'transaction-status-update',
+          title: 'Transaction Status Update',
+          method: 'PUT',
+          path: '/amr/ras/api/v1_0/ras/transaction-status',
+          description: 'Update the status of a transaction',
+          errorCodes: ``,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'sender': 'testagentae',
+            'channel': 'Direct',
+            'company': '784825',
+            'branch': '784826',
+            'Authorization': 'Bearer {{access_token}}'
+          },
+          requestBody: `{
+  "transaction_ref_number": "T987654321",
+  "status": "PAID_OUT",
+  "status_reason": "Funds disbursed to beneficiary",
+  "payout_date": "2023-11-01T15:45:30Z",
+  "additional_info": {
+    "payout_method": "Cash",
+    "payout_location": "Branch 123",
+    "agent_id": "AG456789"
+  }
+}`,
+          codeExamples: [
+            {
+              language: 'curl',
+              label: 'cURL',
+              code: `curl -X PUT "https://drap-sandbox.digitnine.com/amr/ras/api/v1_0/ras/transaction-status" \\
+-H "Content-Type: application/json" \\
+-H "sender: testagentae" \\
+-H "channel: Direct" \\
+-H "company: 784825" \\
+-H "branch: 784826" \\
+-H "Authorization: Bearer {{access_token}}" \\
+-d '{
+  "transaction_ref_number": "T987654321",
+  "status": "PAID_OUT",
+  "status_reason": "Funds disbursed to beneficiary",
+  "payout_date": "2023-11-01T15:45:30Z",
+  "additional_info": {
+    "payout_method": "Cash",
+    "payout_location": "Branch 123",
+    "agent_id": "AG456789"
+  }
+}'`
+            }
+          ],
+          responses: [{
+            status: 200,
+            description: 'Successful operation',
+            example: {
+              status: 'success',
+              status_code: '200',
+              status_message: 'Transaction status updated successfully',
+              data: {
+                transaction_ref_number: 'T987654321',
+                previous_status: 'EXECUTED',
+                current_status: 'PAID_OUT',
+                update_timestamp: '2023-11-01T15:45:35Z'
+              }
+            }
+          },
+          {
+            status: 400,
+            description: 'Bad request',
+            example: {
+              status: 'error',
+              status_code: '400',
+              status_message: 'Invalid status transition',
+              error_code: '40010',
+              error_message: 'Cannot transition from INITIATED to PAID_OUT'
+            }
+          }],
+          guidelines: `
+<h5>Status Update Rules</h5>
+<ul>
+  <li>Only certain status transitions are allowed based on the current transaction state</li>
+  <li>A valid reason must be provided for the status update</li>
+  <li>Only authorized users can update transaction statuses</li>
+  <li>All status updates are logged for audit purposes</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent/Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Request Body Parameters</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">transaction_ref_number</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Transaction reference number</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">New status (PAID_OUT, COMPLETED, etc.)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">status_reason</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Reason for status update</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">payout_date</td>
+      <td class="p-2">String (ISO 8601)</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Date and time of payout (required for PAID_OUT status)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">additional_info</td>
+      <td class="p-2">Object</td>
+      <td class="p-2">No</td>
+      <td class="p-2">Additional information related to the status update</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Valid Status Transitions</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Current Status</th>
+      <th class="p-2">Valid Next Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">EXECUTED</td>
+      <td class="p-2">PAID_OUT, REJECTED</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">PAID_OUT</td>
+      <td class="p-2">COMPLETED</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2">REJECTED</td>
+      <td class="p-2">REFUNDED</td>
+    </tr>
+  </tbody>
+</table>
 `
         },
         {
@@ -3022,6 +5161,7 @@ print_r($data);
           method: 'GET',
           path: '/amr/ras/api/v1_0/ras/enquire-transaction',
           description: 'Get details of a transaction',
+          errorCodes: ``,
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -3878,25 +6018,84 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
       // Log the API call for debugging
       console.log(`Making API call to: ${url}`);
       
+      // Handle automatic quote creation for Create Transaction API
+      if (endpoint.path.includes('/createtransaction')) {
+        console.log('🔍 Checking if quote ID is available for Create Transaction...');
+        let quoteId = getQuoteId();
+        
+        if (!quoteId) {
+          console.log('📝 No quote ID found, creating quote automatically...');
+          try {
+            quoteId = await createQuoteAutomatically();
+          } catch (error) {
+            console.error('❌ Failed to create quote automatically:', error);
+            return JSON.stringify({
+              status: 'error',
+              message: 'Failed to create quote automatically. Please create a quote first.',
+              error: error instanceof Error ? error.message : 'Unknown error'
+            }, null, 2);
+          }
+        }
+        
+        // Replace the hardcoded quote_id in the request body
+        try {
+          const bodyObj = JSON.parse(requestBody);
+          if (bodyObj.transaction) {
+            bodyObj.transaction.quote_id = quoteId;
+            bodyObj.transaction.agent_transaction_ref_number = quoteId;
+            requestBody = JSON.stringify(bodyObj, null, 2);
+            console.log('✅ Updated request body with quote ID:', quoteId);
+          }
+        } catch (e) {
+          console.warn('⚠️ Could not parse request body for quote ID replacement');
+        }
+      }
+      
       // Prepare headers
       const requestHeaders = new Headers();
       Object.entries(headers).forEach(([key, value]) => {
-        // Skip adding the Authorization header - the proxy will handle this
-        if (key.toLowerCase() !== 'authorization') {
-          requestHeaders.append(key, value);
-        }
+        // Include ALL headers including Authorization
+        requestHeaders.append(key, value);
       });
+      
+      // Add Authorization header for non-auth endpoints
+      if (!endpoint.path.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
+        const token = localStorage.getItem('raas_access_token');
+        console.log('🔍 Debug: Checking for token in localStorage');
+        console.log('🔍 Debug: Token found:', token ? 'YES' : 'NO');
+        console.log('🔍 Debug: Token length:', token ? token.length : 0);
+        console.log('🔍 Debug: Token preview:', token ? token.substring(0, 50) + '...' : 'None');
+        
+        if (token && token.length > 0) {
+          requestHeaders.set('Authorization', `Bearer ${token}`);
+          console.log('🔑 Adding Authorization header with token:', token.substring(0, 20) + '...');
+          console.log('🔑 Full Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+        } else {
+          console.warn('❌ No access token found in localStorage');
+          console.warn('❌ Please authenticate first to get a token');
+        }
+        
+        // Add required headers for transaction APIs
+        if (!requestHeaders.has('sender')) requestHeaders.set('sender', 'testagentae');
+        if (!requestHeaders.has('channel')) requestHeaders.set('channel', 'Direct');
+        if (!requestHeaders.has('company')) requestHeaders.set('company', '784825');
+        if (!requestHeaders.has('branch')) requestHeaders.set('branch', '784826');
+      }
       
       // Prepare request options
       const options: RequestInit = {
         method: endpoint.method,
         headers: requestHeaders,
-        // Set longer timeout
-        signal: AbortSignal.timeout(30000) // 30 seconds timeout
+        // Set longer timeout for potentially slow APIs
+        signal: AbortSignal.timeout(60000) // 60 seconds timeout
       };
       
       // Add request body for non-GET requests
       if (endpoint.method !== 'GET' && requestBody) {
+        console.log('📋 Debug: Request body received:', requestBody);
+        console.log('📋 Debug: Request body type:', typeof requestBody);
+        console.log('📋 Debug: Request body length:', requestBody.length);
+        
         // For token endpoint, convert JSON to form data
         if (endpoint.path.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
           try {
@@ -3907,22 +6106,29 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
             });
             options.body = formData;
             requestHeaders.set('Content-Type', 'application/x-www-form-urlencoded');
+            console.log('📋 Debug: Form data body set for auth endpoint');
           } catch (e) {
             // If not valid JSON, use as is
             options.body = requestBody;
+            console.log('📋 Debug: Using raw request body for auth endpoint');
           }
         } else {
           // For other endpoints, use JSON
           options.body = requestBody;
+          console.log('📋 Debug: JSON body set for non-auth endpoint:', requestBody);
           
           // Ensure content type is set
           if (!requestHeaders.has('Content-Type')) {
             requestHeaders.set('Content-Type', 'application/json');
           }
         }
+      } else {
+        console.log('📋 Debug: No request body (GET request or empty body)');
       }
       
-      console.log(`Request headers:`, Object.fromEntries(requestHeaders.entries()));
+      console.log(`📤 Request headers:`, Object.fromEntries(requestHeaders.entries()));
+      console.log(`📤 Authorization header present:`, requestHeaders.has('Authorization'));
+      console.log(`📤 Authorization header value:`, requestHeaders.get('Authorization') ? requestHeaders.get('Authorization')?.substring(0, 30) + '...' : 'None');
       
       // Make the actual API call
       const response = await fetch(url, options);
@@ -3934,6 +6140,31 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
       // Try to parse as JSON for pretty formatting
       try {
         const jsonResponse = JSON.parse(responseText);
+        
+        // Save access token if this is an authentication response
+        if (endpoint.path.includes('/auth/realms/cdp/protocol/openid-connect/token') && 
+            jsonResponse.access_token && 
+            response.status === 200) {
+          localStorage.setItem('raas_access_token', jsonResponse.access_token);
+          console.log('✅ Token saved to localStorage:', jsonResponse.access_token.substring(0, 20) + '...');
+        }
+        
+        // Save quote ID if this is a successful Create Quote response
+        if (endpoint.path.includes('/quote') && 
+            jsonResponse.data && 
+            jsonResponse.data.quote_id && 
+            response.status === 200) {
+          setQuoteId(jsonResponse.data.quote_id);
+          console.log('✅ Quote ID saved automatically:', jsonResponse.data.quote_id);
+        }
+        
+        // Clear quote ID if this is a successful Create Transaction response (to start fresh)
+        if (endpoint.path.includes('/createtransaction') && 
+            response.status === 200) {
+          clearQuoteId();
+          console.log('🔄 Quote ID cleared after successful transaction creation');
+        }
+        
         return JSON.stringify(jsonResponse, null, 2);
       } catch (e) {
         // Return as text if not JSON
@@ -3941,10 +6172,29 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
       }
     } catch (error) {
       console.error('Error making API request:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'An error occurred while processing your request';
+      let errorDetails = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = 'Request timed out. The API call took too long to complete.';
+          errorDetails = 'Timeout after 60 seconds';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error. Please check your connection and ensure the CORS proxy server is running.';
+          errorDetails = 'Network connection failed';
+        } else if (error.message.includes('CORS')) {
+          errorMessage = 'CORS error. Please ensure the proxy server is running on port 3001.';
+          errorDetails = 'CORS policy violation';
+        }
+      }
+      
       return JSON.stringify({
         status: 'error',
-        message: 'An error occurred while processing your request',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        message: errorMessage,
+        error: errorDetails,
+        suggestion: 'If this is an authentication error, please authenticate first using the Authentication endpoint.'
       }, null, 2);
     }
   };
@@ -4137,16 +6387,17 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
                     queryParams={endpoint.queryParams}
                     codeExamples={endpoint.codeExamples}
                     guidelines={endpoint.guidelines}
+                    errorCodes={endpoint.errorCodes}
                     theme={theme}
                     onTryIt={(editableBody, editableHeaders) => handleTryIt(endpoint, editableBody, editableHeaders)}
                   />
-                    ))}
-                  </div>
+                ))}
+              </div>
             ) : (
               <div className="text-center py-12">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
                   <Filter className="h-8 w-8 text-gray-400" />
-                      </div>
+                </div>
                 <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">No endpoints found</h3>
                 <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                   {searchQuery || selectedMethod 
@@ -4154,21 +6405,20 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
                     : "There are no endpoints available in this category."}
                 </p>
                 {(searchQuery || selectedMethod) && (
-                <button
+                  <button
                     onClick={clearFilters}
                     className="mt-4 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-sm font-medium"
-                >
+                  >
                     Clear Filters
-                </button>
-                    )}
-                  </div>
-          )}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       </ScrollRevealContainer>
-
     </div>
   );
 };
 
-export default APIReferencePage; 
+export default APIReferencePage;

@@ -1,15 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Play, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import ScrollRevealContainer from '../components/ScrollRevealContainer';
 import clsx from 'clsx';
 
-// Base URL for direct API calls
-const API_BASE_URL = 'https://drap-sandbox.digitnine.com';
+// Base URL for API calls through CORS proxy
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Simple token management
+let currentToken = localStorage.getItem('raas_access_token') || '';
+
+const getAccessToken = () => {
+  // Always get the latest token from localStorage
+  const token = localStorage.getItem('raas_access_token') || '';
+  currentToken = token; // Keep global variable in sync
+  return token;
+};
+
+const setAccessToken = (token: string) => {
+  currentToken = token;
+  localStorage.setItem('raas_access_token', token);
+  console.log('💾 Token saved to localStorage and global variable');
+};
+
+// Debug function to check token status
+const debugToken = () => {
+  const localToken = localStorage.getItem('raas_access_token');
+  console.log('🔍 === TOKEN DEBUG ===');
+  console.log('Global token:', currentToken ? currentToken.substring(0, 20) + '...' : 'None');
+  console.log('localStorage token:', localToken ? localToken.substring(0, 20) + '...' : 'None');
+  console.log('Token length:', currentToken.length);
+  console.log('localStorage token length:', localToken ? localToken.length : 0);
+  console.log('=====================');
+};
 
 const SandboxTestingPage = () => {
   const [activeTab, setActiveTab] = useState('authentication');
-  const [accessToken, setAccessToken] = useState('');
+  const [accessToken, setAccessTokenState] = useState(getAccessToken);
   const [isTokenCopied, setIsTokenCopied] = useState(false);
+  
+  // Simple effect to sync state with global token
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const token = getAccessToken();
+      if (token !== accessToken) {
+        setAccessTokenState(token);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [accessToken]);
   const [activeEndpoint, setActiveEndpoint] = useState<string | null>(null);
   const [requestBody, setRequestBody] = useState<Record<string, any>>({});
   const [responseData, setResponseData] = useState<any>(null);
@@ -213,9 +252,12 @@ const SandboxTestingPage = () => {
   ];
 
   const handleCopyToken = () => {
-    navigator.clipboard.writeText(accessToken);
-    setIsTokenCopied(true);
-    setTimeout(() => setIsTokenCopied(false), 2000);
+    const token = getAccessToken();
+    if (token) {
+      navigator.clipboard.writeText(token);
+      setIsTokenCopied(true);
+      setTimeout(() => setIsTokenCopied(false), 2000);
+    }
   };
 
   const handleEndpointClick = (endpointId: string) => {
@@ -231,8 +273,9 @@ const SandboxTestingPage = () => {
       
       if (category) {
         const endpoint = category.endpoints.find(ep => ep.id === endpointId);
-        if (endpoint && 'requestBody' in endpoint) {
-          setRequestBody(endpoint.requestBody);
+        if (endpoint && 'requestBody' in endpoint && endpoint.requestBody) {
+          // Create a deep copy to avoid reference issues
+          setRequestBody(JSON.parse(JSON.stringify(endpoint.requestBody)));
         } else {
           setRequestBody({});
         }
@@ -260,13 +303,51 @@ const SandboxTestingPage = () => {
       // Set up headers
       const headers: Record<string, string> = { ...endpoint.headers };
       
-      // Add authorization header if we have an access token and it's not the auth endpoint
-      if (accessToken && endpoint.id !== 'keycloak') {
-        headers['Authorization'] = `Bearer ${accessToken}`;
+      // Add authorization header if it's not the auth endpoint
+      if (endpoint.id !== 'keycloak') {
+        // Force refresh token from localStorage before making request
+        const token = getAccessToken();
+        
+        if (token && token.length > 0) {
+          headers['Authorization'] = `Bearer ${token}`;
+          console.log('🔑 Using token:', token.substring(0, 20) + '...');
+          console.log('🔑 Full token for debugging:', token);
+          console.log('🔑 Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
+        } else {
+          console.warn('❌ No access token available! Please authenticate first.');
+          console.log('🔍 Current localStorage token:', localStorage.getItem('raas_access_token'));
+          throw new Error('Authentication required: Please get an access token first');
+        }
+        
+        // Always ensure required headers are present for all API calls
+        headers['sender'] = 'testagentae';
+        headers['channel'] = 'Direct';
+        headers['company'] = '784825';
+        headers['branch'] = '784826';
       }
 
       // Full URL for the API call
       const url = `${API_BASE_URL}${endpoint.url}`;
+      
+      // Debug token before making request
+      if (endpoint.id !== 'keycloak') {
+        debugToken();
+      }
+      
+      // Log all request details
+      console.log('📤 Request headers:', JSON.stringify(headers, null, 2));
+      console.log('🔗 Request URL:', url);
+      console.log('📋 Request method:', endpoint.method);
+      
+      // Verify Authorization header is set
+      if (endpoint.id !== 'keycloak') {
+        if (headers['Authorization']) {
+          console.log('✅ Authorization header is set correctly');
+        } else {
+          console.error('❌ Authorization header is missing!');
+          console.error('Available headers:', Object.keys(headers));
+        }
+      }
       
       console.log(`Making ${endpoint.method} request to ${url}`);
       console.log('Headers:', headers);
@@ -298,7 +379,10 @@ const SandboxTestingPage = () => {
         
         // Save the access token if this is the auth endpoint
         if (data && data.access_token) {
+          // Save token using our global function
           setAccessToken(data.access_token);
+          console.log('✅ Token saved:', data.access_token.substring(0, 20) + '...');
+          debugToken(); // Debug the token after saving
         }
         
         // Set the response data
@@ -319,13 +403,18 @@ const SandboxTestingPage = () => {
         // Prepare fetch options
         const options: RequestInit = {
           method,
-          headers,
-          mode: 'cors'
+          headers
         };
         
         // Add body for POST/PUT requests
         if (method === 'POST' || method === 'PUT') {
-          const body = JSON.stringify(requestBody);
+          // If the endpoint has a predefined requestBody and no custom one has been set,
+          // use the predefined one
+          const bodyToSend = Object.keys(requestBody).length > 0 
+            ? requestBody 
+            : ('requestBody' in endpoint && endpoint.requestBody ? endpoint.requestBody : {});
+            
+          const body = JSON.stringify(bodyToSend);
           options.body = body;
           console.log(`${method} body:`, body);
         }
@@ -344,7 +433,23 @@ const SandboxTestingPage = () => {
       console.log('Response received:', responseData);
     } catch (err: any) {
       console.error('API call error:', err);
-      setError(err.message || 'An error occurred while processing your request');
+      
+      // Enhanced error handling with more detailed information
+      if (err.response) {
+        const status = err.response.status;
+        const statusText = err.response.statusText;
+        setError(`HTTP ${status} - ${statusText}: ${err.message}`);
+      } else if (err instanceof Error) {
+        // Check if it's an authentication issue
+        if (err.message.includes('401') || err.message.toLowerCase().includes('unauthorized')) {
+          setError(`Authentication Error: Make sure you've obtained a valid token first. ${err.message}`);
+          console.warn('Authentication issue detected. Current token status:', accessToken ? 'Token exists' : 'No token');
+        } else {
+          setError(err.message || 'An error occurred while processing your request');
+        }
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -381,7 +486,7 @@ const SandboxTestingPage = () => {
       </ScrollRevealContainer>
 
       {/* Access Token Display */}
-      {accessToken && (
+      {getAccessToken() && (
         <ScrollRevealContainer>
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between">
@@ -408,7 +513,7 @@ const SandboxTestingPage = () => {
             </div>
             <div className="mt-2 bg-white dark:bg-gray-800 rounded p-2 overflow-x-auto">
               <code className="text-xs text-gray-800 dark:text-gray-300">
-                {accessToken.substring(0, 20)}...{accessToken.substring(accessToken.length - 10)}
+                {getAccessToken().substring(0, 20)}...{getAccessToken().substring(getAccessToken().length - 10)}
               </code>
             </div>
           </div>

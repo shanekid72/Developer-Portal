@@ -13,6 +13,7 @@ export interface APIEndpoint {
   responses: Response[];
   codeExamples: CodeExample[];
   guidelines?: string;
+  errorCodes?: string;
 }
 
 export interface Parameter {
@@ -20,6 +21,7 @@ export interface Parameter {
   type: string;
   required: boolean;
   description: string;
+  in?: string; // Adding 'in' property to support query parameters
   example?: string;
 }
 
