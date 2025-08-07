@@ -1,8 +1,8 @@
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Terminal, Code, CheckCircle, ArrowRight, ExternalLink, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Terminal, Code, CheckCircle, ArrowRight, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Rocket } from 'lucide-react';
 import ScrollRevealContainer from '../components/ScrollRevealContainer';
-import CodeBlock from '../components/CodeBlock';
+// import CodeBlock from '../components/CodeBlock';
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -76,7 +76,7 @@ const PlaceholderPage = () => {
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
               {isQuickStartGuide ? (
-                <Terminal className="h-6 w-6 text-white" />
+                <Rocket className="h-6 w-6 text-white" />
               ) : (
                 <FileText className="h-6 w-6 text-white" />
               )}

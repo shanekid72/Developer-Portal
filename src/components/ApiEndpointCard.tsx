@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Theme } from '../types';
+import DynamicRequestForm from './DynamicRequestForm';
 
 interface ApiEndpointCardProps {
   method: string;
@@ -237,7 +238,7 @@ const ApiEndpointCard: React.FC<ApiEndpointCardProps> = ({
                   >
                     Usage Guidelines
                   </button>
-                  {(title === 'Create Quote' || title === 'Create Transaction' || title === 'Confirm Transaction' || title === 'Enquire Transaction' || title === 'Cancel Transaction' || title === 'Transaction Receipt' || title === 'Transaction Status Update') && (
+                  {(title === 'Get Access Token' || title === 'Create Quote' || title === 'Create Transaction' || title === 'Confirm Transaction' || title === 'Enquire Transaction' || title === 'Cancel Transaction' || title === 'Transaction Receipt' || title === 'Transaction Status Update') && (
                     <button
                       onClick={() => setSelectedTab('errorCodes')}
                       className={`px-3 py-2 text-sm font-medium border-b-2 ${
@@ -353,6 +354,15 @@ const ApiEndpointCard: React.FC<ApiEndpointCardProps> = ({
                           </table>
                         </div>
                       </div>
+                    )}
+                    
+                    {/* Dynamic Request Form - Only show for relevant endpoints */}
+                    {(['Create Quote', 'Create Transaction'].includes(title) && !['Get Access Token', 'Authentication'].includes(title)) && (
+                      <DynamicRequestForm
+                        endpointTitle={title}
+                        currentRequestBody={editableRequestBody}
+                        onRequestBodyChange={setEditableRequestBody}
+                      />
                     )}
                     
                     {/* Request Body */}

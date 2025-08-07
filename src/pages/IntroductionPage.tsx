@@ -1,4 +1,4 @@
-import { ExternalLink, Terminal, Book, Code } from 'lucide-react';
+import { Book } from 'lucide-react';
 import ScrollRevealContainer from '../components/ScrollRevealContainer';
 
 const IntroductionPage = () => {

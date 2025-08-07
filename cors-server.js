@@ -39,6 +39,43 @@ app.get('/', (req, res) => {
   res.send('CORS Proxy Server is running');
 });
 
+// Add a test endpoint to debug the Get Codes API
+app.get('/test-get-codes', async (req, res) => {
+  try {
+    console.log('Testing Get Codes API directly...');
+    
+    const response = await fetch('https://drap-sandbox.digitnine.com/raas/masters/v1/codes', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'sender': 'testagentae',
+        'channel': 'Direct',
+        'company': '784825',
+        'branch': '784826'
+      },
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    });
+    
+    const data = await response.text();
+    console.log('Get Codes API response status:', response.status);
+    console.log('Get Codes API response length:', data.length);
+    
+    res.json({
+      status: response.status,
+      success: response.ok,
+      dataLength: data.length,
+      dataPreview: data.substring(0, 200),
+      headers: Object.fromEntries(response.headers.entries())
+    });
+  } catch (error) {
+    console.error('Error testing Get Codes API:', error.message);
+    res.json({
+      error: error.message,
+      type: error.name
+    });
+  }
+});
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

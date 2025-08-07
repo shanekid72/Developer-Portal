@@ -8,22 +8,19 @@ import clsx from 'clsx';
 import { Theme } from '../types';
 
 // Quote management functions
-let currentQuoteId = localStorage.getItem('raas_quote_id') || '';
+// let currentQuoteId = localStorage.getItem('raas_quote_id') || '';
 
 const getQuoteId = () => {
   const quoteId = localStorage.getItem('raas_quote_id') || '';
-  currentQuoteId = quoteId;
   return quoteId;
 };
 
 const setQuoteId = (quoteId: string) => {
-  currentQuoteId = quoteId;
   localStorage.setItem('raas_quote_id', quoteId);
   console.log('💾 Quote ID saved to localStorage:', quoteId);
 };
 
 const clearQuoteId = () => {
-  currentQuoteId = '';
   localStorage.removeItem('raas_quote_id');
   console.log('🗑️ Quote ID cleared from localStorage');
 };
@@ -352,6 +349,41 @@ print(data["access_token"])`
     </tr>
   </tbody>
 </table>
+`,
+          errorCodes: `
+<h5>Error Codes</h5>
+<div class="overflow-x-auto">
+  <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+    <thead class="bg-gray-100 dark:bg-gray-700">
+      <tr>
+        <th class="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+          API
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+          HTTP status code
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+          Error Code
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+          Message
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600">
+          Reason
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+      <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">Get Access Token</td>
+        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">401</td>
+        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">40001</td>
+        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Not authorized/access denied</td>
+        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">Not authorized/access denied</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <h5>Error Handling</h5>
 <ul>
@@ -380,7 +412,7 @@ print(data["access_token"])`
           title: 'Get Codes',
           method: 'GET',
           path: '/raas/masters/v1/codes',
-          description: 'Retrieve reference codes for the system',
+          description: 'Get codes API returns the master data for Id types, relation, profession, purpose, payments modes, instruments, receiving modes, fee types, address types, income range types, correspondent, cancelation reasons and account types list for the available services. This API will return all types in the response if the param is empty.',
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -609,7 +641,7 @@ console.log(data);`
           title: 'Get Service Corridor',
           method: 'GET',
           path: '/raas/masters/v1/service-corridor',
-          description: 'Retrieve available service corridors for remittance',
+          description: 'Fetches the service details, corridor details, currency details and agent details.',
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -939,7 +971,7 @@ print_r($data);
           title: 'Get Rates',
           method: 'GET',
           path: '/raas/masters/v1/rates',
-          description: 'Retrieve current exchange rates',
+          description: 'API to be used to get the exchange rates between the sending country and all its possible receive countries.',
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -6005,6 +6037,8 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
   };
 
   const handleTryIt = async (endpoint: APIEndpoint, requestBody: string, headers: Record<string, string>) => {
+    let timeoutId: NodeJS.Timeout | undefined;
+    
     try {
       // IMPORTANT: We're using the simple HTTP proxy server with automatic authentication
       // The proxy server must be running with: node simple-http-proxy.cjs
@@ -6073,6 +6107,16 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
         } else {
           console.warn('❌ No access token found in localStorage');
           console.warn('❌ Please authenticate first to get a token');
+          
+          // Return early with authentication error for non-auth endpoints
+          if (!endpoint.path.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
+            return JSON.stringify({
+              status: 'error',
+              message: 'Authentication required',
+              error: 'No access token found',
+              suggestion: 'Please authenticate first using the Get Access Token endpoint to obtain a valid token.'
+            }, null, 2);
+          }
         }
         
         // Add required headers for transaction APIs
@@ -6082,12 +6126,20 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
         if (!requestHeaders.has('branch')) requestHeaders.set('branch', '784826');
       }
       
-      // Prepare request options
+      // Prepare request options with extended timeout for Get Codes API
+      const timeout = endpoint.path.includes('/raas/masters/v1/codes') ? 300000 : 120000; // 5 minutes for Get Codes, 2 minutes for others
+      
+      // Create a more robust timeout implementation
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => {
+        controller.abort();
+      }, timeout);
+      
       const options: RequestInit = {
         method: endpoint.method,
         headers: requestHeaders,
-        // Set longer timeout for potentially slow APIs
-        signal: AbortSignal.timeout(60000) // 60 seconds timeout
+        // Set extended timeout for Get Codes API due to large response (222KB)
+        signal: controller.signal
       };
       
       // Add request body for non-GET requests
@@ -6131,11 +6183,28 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
       console.log(`📤 Authorization header value:`, requestHeaders.get('Authorization') ? requestHeaders.get('Authorization')?.substring(0, 30) + '...' : 'None');
       
       // Make the actual API call
+      console.log('🚀 Making API call to:', url);
+      console.log('🚀 Request method:', endpoint.method);
+      console.log('🚀 Request headers:', Object.fromEntries(requestHeaders.entries()));
+      if (endpoint.path.includes('/raas/masters/v1/codes')) {
+        console.log('🎯 Get Codes API: Using 5-minute timeout for large response');
+      }
+      
       const response = await fetch(url, options);
       
+      // Clear the timeout since request completed
+      clearTimeout(timeoutId);
+      
       // Get the response text
+      console.log('📥 Starting to read response...');
       const responseText = await response.text();
-      console.log('API response status:', response.status);
+      console.log('📥 API response status:', response.status);
+      console.log('📥 API response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('📥 API response text length:', responseText.length);
+      console.log('📥 API response preview:', responseText.substring(0, 200) + '...');
+      if (endpoint.path.includes('/raas/masters/v1/codes')) {
+        console.log('🎯 Get Codes API: Successfully received', responseText.length, 'bytes of data');
+      }
       
       // Try to parse as JSON for pretty formatting
       try {
@@ -6171,6 +6240,11 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
         return responseText;
       }
     } catch (error) {
+      // Clear the timeout in case of error
+      if (typeof timeoutId !== 'undefined') {
+        clearTimeout(timeoutId);
+      }
+      
       console.error('Error making API request:', error);
       
       // Provide more specific error messages
@@ -6180,13 +6254,16 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           errorMessage = 'Request timed out. The API call took too long to complete.';
-          errorDetails = 'Timeout after 60 seconds';
+          errorDetails = endpoint.path.includes('/raas/masters/v1/codes') ? 'Timeout after 5 minutes' : 'Timeout after 2 minutes';
         } else if (error.message.includes('Failed to fetch')) {
           errorMessage = 'Network error. Please check your connection and ensure the CORS proxy server is running.';
           errorDetails = 'Network connection failed';
         } else if (error.message.includes('CORS')) {
           errorMessage = 'CORS error. Please ensure the proxy server is running on port 3001.';
           errorDetails = 'CORS policy violation';
+        } else {
+          errorMessage = 'API request failed';
+          errorDetails = error.message;
         }
       }
       

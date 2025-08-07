@@ -1,8 +1,8 @@
 /**
- * Simple HTTP Proxy Server
+ * Simple HTTP Proxy Server - Fixed Version
  * 
  * This is a lightweight proxy server built with Node.js core modules.
- * It handles authentication and avoids the Express path-to-regexp issues.
+ * It handles authentication and basic request forwarding without complex retry logic.
  */
 
 const http = require('http');
@@ -136,7 +136,7 @@ function parseRequestBody(req) {
 }
 
 /**
- * Forward the request to the target server with retry mechanism
+ * Forward the request to the target server
  * @param {http.IncomingMessage} req - The client request
  * @param {http.ServerResponse} res - The client response
  * @param {string} path - The target path
@@ -144,184 +144,106 @@ function parseRequestBody(req) {
  * @param {string} token - The authentication token
  */
 async function forwardRequest(req, res, path, body, token) {
-  const maxRetries = 3;
-  let retryCount = 0;
-  
-  const attemptRequest = () => {
-    return new Promise((resolve, reject) => {
-      // Prepare headers
-      const headers = {
-        'Content-Type': req.headers['content-type'] || 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'sender': req.headers['sender'] || 'testagentae',
-        'channel': req.headers['channel'] || 'Direct',
-        'company': req.headers['company'] || '784825',
-        'branch': req.headers['branch'] || '784826',
-        'Connection': 'keep-alive',
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip, deflate'
-      };
-      
-      // Prepare request body
-      let postData = '';
-      if (body) {
-        if (typeof body === 'string') {
-          postData = body;
-        } else if (headers['Content-Type'].includes('application/json')) {
-          postData = JSON.stringify(body);
-          headers['Content-Length'] = Buffer.byteLength(postData);
-        } else if (headers['Content-Type'].includes('application/x-www-form-urlencoded')) {
-          postData = querystring.stringify(body);
-          headers['Content-Length'] = Buffer.byteLength(postData);
-        }
-      }
-      
-      // Request options
-      const options = {
-        hostname: TARGET_HOST,
-        port: 443,
-        path: path,
-        method: req.method,
-        headers: headers,
-        timeout: 120000 // 2 minutes timeout
-      };
-      
-      console.log(`Forwarding ${req.method} request to: https://${TARGET_HOST}${path} (attempt ${retryCount + 1}/${maxRetries})`);
-      
-      const proxyReq = https.request(options, (proxyRes) => {
-        // Set status code
-        res.statusCode = proxyRes.statusCode;
-        
-        // Forward response headers
-        Object.keys(proxyRes.headers).forEach((key) => {
-          if (!['transfer-encoding', 'connection'].includes(key.toLowerCase())) {
-            res.setHeader(key, proxyRes.headers[key]);
-          }
-        });
-        
-        // Set CORS headers
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', '*');
-        
-        // Forward response body
-        proxyRes.pipe(res);
-        
-        // Log response
-        let responseData = '';
-        proxyRes.on('data', (chunk) => {
-          responseData += chunk;
-        });
-        
-        proxyRes.on('end', () => {
-          console.log(`Response status: ${proxyRes.statusCode}`);
-          try {
-            // Try to parse and log JSON response
-            const jsonResponse = JSON.parse(responseData);
-            console.log('Response data:', JSON.stringify(jsonResponse).substring(0, 200) + '...');
-          } catch (e) {
-            // Log raw response if not JSON
-            console.log('Response data:', responseData.substring(0, 200) + '...');
-          }
-          
-          // Resolve on successful response
-          resolve();
-        });
-      });
-      
-      proxyReq.on('error', (error) => {
-        console.error(`Error in proxy request (attempt ${retryCount + 1}):`, error);
-        reject(error);
-      });
-      
-      proxyReq.on('timeout', () => {
-        console.error(`Timeout in proxy request (attempt ${retryCount + 1})`);
-        proxyReq.destroy();
-        reject(new Error('Request timeout'));
-      });
-      
-      // Write request body for non-GET requests
-      if (req.method !== 'GET' && postData) {
-        proxyReq.write(postData);
-      }
-      
-      proxyReq.end();
-    });
-  };
-  
-  // Retry logic
-  while (retryCount < maxRetries) {
-    try {
-      await attemptRequest();
-      return; // Success, exit the function
-    } catch (error) {
-      retryCount++;
-      console.log(`Request failed (attempt ${retryCount}/${maxRetries}):`, error.message);
-      
-      if (retryCount >= maxRetries) {
-        // All retries exhausted
-        console.error('All retry attempts failed');
-        res.statusCode = 500;
-        res.end(JSON.stringify({
-          status: 'failure',
-          error_code: 50000,
-          message: 'Proxy request failed after retries',
-          details: { description: error.message, retries: retryCount }
-        }));
-        return;
-      }
-      
-      // Wait before retrying (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
-      console.log(`Waiting ${delay}ms before retry...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-}
-
-/**
- * Handle special case for quote endpoint
- * @param {http.IncomingMessage} req - The client request
- * @param {http.ServerResponse} res - The client response
- * @param {string} path - The target path
- */
-async function handleQuoteRequest(req, res, path) {
-  try {
-    // Get auth token
-    const token = await getAuthToken();
-    
-    // Parse request body
-    const body = await parseRequestBody(req);
-    
-    // Use sample quote data if body is empty
-    const sampleQuoteData = {
-      "sending_country_code": "AE",
-      "sending_currency_code": "AED",
-      "receiving_country_code": "PK",
-      "receiving_currency_code": "PKR",
-      "sending_amount": 200,
-      "receiving_mode": "BANK",
-      "type": "SEND",
-      "instrument": "REMITTANCE"
+  return new Promise((resolve, reject) => {
+    // Prepare headers
+    const headers = {
+      'Content-Type': req.headers['content-type'] || 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'sender': req.headers['sender'] || 'testagentae',
+      'channel': req.headers['channel'] || 'Direct',
+      'company': req.headers['company'] || '784825',
+      'branch': req.headers['branch'] || '784826',
+      'Connection': 'keep-alive',
+      'Accept': 'application/json',
+      'Accept-Encoding': 'gzip, deflate'
     };
     
-    // Use sample data if body is empty for POST requests
-    const requestBody = req.method === 'POST' && (!body || Object.keys(body).length === 0) 
-      ? sampleQuoteData 
-      : body;
+    // Prepare request body
+    let postData = '';
+    if (body) {
+      if (typeof body === 'string') {
+        postData = body;
+      } else if (headers['Content-Type'].includes('application/json')) {
+        postData = JSON.stringify(body);
+        headers['Content-Length'] = Buffer.byteLength(postData);
+      } else if (headers['Content-Type'].includes('application/x-www-form-urlencoded')) {
+        postData = querystring.stringify(body);
+        headers['Content-Length'] = Buffer.byteLength(postData);
+      }
+    }
     
-    // Forward the request
-    await forwardRequest(req, res, path, requestBody, token);
-  } catch (error) {
-    console.error('Error handling quote request:', error);
-    res.statusCode = 500;
-    res.end(JSON.stringify({
-      status: 'failure',
-      error_code: 50000,
-      message: 'Quote request failed',
-      details: { description: error.message }
-    }));
-  }
+    // Request options with longer timeout for Get Codes API
+    const options = {
+      hostname: TARGET_HOST,
+      port: 443,
+      path: path,
+      method: req.method,
+      headers: headers,
+      timeout: 600000 // 10 minutes for all APIs to prevent timeouts
+    };
+    
+    console.log(`Forwarding ${req.method} request to: https://${TARGET_HOST}${path}`);
+    
+    const proxyReq = https.request(options, (proxyRes) => {
+      // Set status code
+      res.statusCode = proxyRes.statusCode;
+      
+      // Forward response headers
+      Object.keys(proxyRes.headers).forEach((key) => {
+        if (!['transfer-encoding', 'connection'].includes(key.toLowerCase())) {
+          res.setHeader(key, proxyRes.headers[key]);
+        }
+      });
+      
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      
+      // Forward response body
+      proxyRes.pipe(res);
+      
+      // Log response
+      let responseData = '';
+      proxyRes.on('data', (chunk) => {
+        responseData += chunk;
+      });
+      
+      proxyRes.on('end', () => {
+        console.log(`Response status: ${proxyRes.statusCode}`);
+        
+        try {
+          // Try to parse and log JSON response
+          const jsonResponse = JSON.parse(responseData);
+          console.log('Response data:', JSON.stringify(jsonResponse).substring(0, 200) + '...');
+        } catch (e) {
+          // Log raw response if not JSON
+          console.log('Response data:', responseData.substring(0, 200) + '...');
+        }
+        
+        // Resolve on successful response
+        resolve();
+      });
+    });
+    
+    proxyReq.on('error', (error) => {
+      console.error('Error in proxy request:', error);
+      reject(error);
+    });
+    
+    proxyReq.on('timeout', () => {
+      console.error('Timeout in proxy request');
+      proxyReq.destroy();
+      reject(new Error('Request timeout'));
+    });
+    
+    // Write request body for non-GET requests
+    if (req.method !== 'GET' && postData) {
+      proxyReq.write(postData);
+    }
+    
+    proxyReq.end();
+  });
 }
 
 /**
@@ -481,7 +403,11 @@ const server = http.createServer(async (req, res) => {
     res.statusCode = 200;
     return res.end(JSON.stringify({
       status: 'success',
-      message: 'Simple HTTP Proxy Server is running with automatic authentication'
+      message: 'Simple HTTP Proxy Server is running',
+      features: {
+        timeout: '10-minute timeout for all APIs to prevent timeouts',
+        auth: 'Automatic token management'
+      }
     }));
   }
   
@@ -493,11 +419,6 @@ const server = http.createServer(async (req, res) => {
     // Handle auth endpoint separately
     if (targetPath.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
       return handleAuthRequest(req, res, targetPath);
-    }
-    
-    // Handle quote endpoint specially
-    if (targetPath.includes('/amr/ras/api/v1_0/ras/quote')) {
-      return handleQuoteRequest(req, res, targetPath);
     }
     
     // Handle all other API requests
@@ -518,5 +439,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Simple HTTP Proxy Server running on port ${PORT}`);
   console.log(`Access the API through: http://localhost:${PORT}/api/...`);
-  console.log('This proxy automatically adds authentication tokens to API requests');
+  console.log('Features: 10-minute timeout for all APIs, Automatic token management');
 }); 

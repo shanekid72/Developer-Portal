@@ -1,8 +1,8 @@
 /**
- * Simple HTTP Proxy Server
+ * Enhanced HTTP Proxy Server with Caching and Advanced Retry Logic
  * 
  * This is a lightweight proxy server built with Node.js core modules.
- * It handles authentication and avoids the Express path-to-regexp issues.
+ * It handles authentication, caching, and advanced retry mechanisms.
  */
 
 const http = require('http');
@@ -14,6 +14,11 @@ const { Buffer } = require('buffer');
 // Authentication cache
 let authToken = null;
 let tokenExpiry = 0;
+
+// Get Codes API cache (since it returns master data that rarely changes)
+let codesCache = null;
+let codesCacheExpiry = 0;
+const CODES_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 // Configuration
 const PORT = 3001;
@@ -136,7 +141,7 @@ function parseRequestBody(req) {
 }
 
 /**
- * Forward the request to the target server with retry mechanism
+ * Forward the request to the target server with enhanced retry mechanism
  * @param {http.IncomingMessage} req - The client request
  * @param {http.ServerResponse} res - The client response
  * @param {string} path - The target path
@@ -144,7 +149,8 @@ function parseRequestBody(req) {
  * @param {string} token - The authentication token
  */
 async function forwardRequest(req, res, path, body, token) {
-  const maxRetries = 3;
+  // More retries for Get Codes API due to large response and intermittent timeouts
+  const maxRetries = path.includes('/raas/masters/v1/codes') ? 5 : 3;
   let retryCount = 0;
   
   const attemptRequest = () => {
@@ -176,14 +182,14 @@ async function forwardRequest(req, res, path, body, token) {
         }
       }
       
-      // Request options
+      // Request options with longer timeout for Get Codes API
       const options = {
         hostname: TARGET_HOST,
         port: 443,
         path: path,
         method: req.method,
         headers: headers,
-        timeout: 120000 // 2 minutes timeout
+        timeout: path.includes('/raas/masters/v1/codes') ? 180000 : 120000 // 3 minutes for Get Codes, 2 minutes for others
       };
       
       console.log(`Forwarding ${req.method} request to: https://${TARGET_HOST}${path} (attempt ${retryCount + 1}/${maxRetries})`);
@@ -215,6 +221,21 @@ async function forwardRequest(req, res, path, body, token) {
         
         proxyRes.on('end', () => {
           console.log(`Response status: ${proxyRes.statusCode}`);
+          
+          // Check if it's a timeout error and should retry
+          if (proxyRes.statusCode === 408) {
+            console.log('Detected 408 timeout, will retry...');
+            reject(new Error('Request timeout - will retry'));
+            return;
+          }
+          
+          // Cache successful Get Codes responses
+          if (path.includes('/raas/masters/v1/codes') && proxyRes.statusCode === 200) {
+            codesCache = responseData;
+            codesCacheExpiry = Date.now() + CODES_CACHE_DURATION;
+            console.log('Cached Get Codes response for 30 minutes');
+          }
+          
           try {
             // Try to parse and log JSON response
             const jsonResponse = JSON.parse(responseData);
@@ -249,7 +270,7 @@ async function forwardRequest(req, res, path, body, token) {
     });
   };
   
-  // Retry logic
+  // Retry logic with exponential backoff
   while (retryCount < maxRetries) {
     try {
       await attemptRequest();
@@ -271,8 +292,9 @@ async function forwardRequest(req, res, path, body, token) {
         return;
       }
       
-      // Wait before retrying (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
+      // Wait before retrying (exponential backoff with longer delays for Get Codes)
+      const baseDelay = path.includes('/raas/masters/v1/codes') ? 2000 : 1000;
+      const delay = Math.min(baseDelay * Math.pow(2, retryCount - 1), 10000);
       console.log(`Waiting ${delay}ms before retry...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
@@ -420,13 +442,26 @@ async function handleAuthRequest(req, res, path) {
 }
 
 /**
- * Handle generic API requests
+ * Handle generic API requests with caching for Get Codes
  * @param {http.IncomingMessage} req - The client request
  * @param {http.ServerResponse} res - The client response
  * @param {string} path - The target path
  */
 async function handleGenericRequest(req, res, path) {
   try {
+    // Check cache for Get Codes API
+    if (path.includes('/raas/masters/v1/codes') && codesCache && Date.now() < codesCacheExpiry) {
+      console.log('Returning cached Get Codes response');
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.setHeader('X-Cache', 'HIT');
+      res.end(codesCache);
+      return;
+    }
+    
     // Get auth token
     const token = await getAuthToken();
     
@@ -481,7 +516,12 @@ const server = http.createServer(async (req, res) => {
     res.statusCode = 200;
     return res.end(JSON.stringify({
       status: 'success',
-      message: 'Simple HTTP Proxy Server is running with automatic authentication'
+      message: 'Enhanced HTTP Proxy Server is running with caching and advanced retry logic',
+      features: {
+        caching: 'Get Codes API responses cached for 30 minutes',
+        retry: 'Up to 5 retries for Get Codes API with exponential backoff',
+        timeout: '3-minute timeout for Get Codes API'
+      }
     }));
   }
   
@@ -516,7 +556,8 @@ const server = http.createServer(async (req, res) => {
 
 // Start the server
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Simple HTTP Proxy Server running on port ${PORT}`);
+  console.log(`Enhanced HTTP Proxy Server running on port ${PORT}`);
   console.log(`Access the API through: http://localhost:${PORT}/api/...`);
-  console.log('This proxy automatically adds authentication tokens to API requests');
+  console.log('Features: Caching, Advanced Retry Logic, Extended Timeouts');
+  console.log('Get Codes API: 5 retries, 3-minute timeout, 30-minute cache');
 }); 
