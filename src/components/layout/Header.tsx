@@ -1,25 +1,22 @@
-import { Moon, Sun, Menu, ChevronDown, Search, ExternalLink, X } from 'lucide-react';
+import { Moon, Sun, Menu, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Theme, Country } from '../../types';
+import { Theme } from '../../types';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   theme: Theme;
   onThemeToggle: () => void;
-  selectedCountry: string;
-  onCountryChange: (country: string) => void;
   onMenuClick: () => void;
 }
 
-const countries: Country[] = [
-  { code: 'UAE', name: 'United Arab Emirates', flag: '🇦🇪', apiVersion: 'v2.0-UAE' },
-  { code: 'KSA', name: 'Saudi Arabia', flag: '🇸🇦', apiVersion: 'v2.0-KSA' },
-  { code: 'USA', name: 'United States', flag: '🇺🇸', apiVersion: 'v1.0-USA' },
-];
+// const countries: Country[] = [
+//   { code: 'UAE', name: 'United Arab Emirates', flag: '🇦🇪', apiVersion: 'v2.0-UAE' },
+//   { code: 'KSA', name: 'Saudi Arabia', flag: '🇸🇦', apiVersion: 'v2.0-KSA' },
+//   { code: 'USA', name: 'United States', flag: '🇺🇸', apiVersion: 'v1.0-USA' },
+// ];
 
-const Header = ({ theme, onThemeToggle, selectedCountry, onCountryChange, onMenuClick }: HeaderProps) => {
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+const Header = ({ theme, onThemeToggle, onMenuClick }: HeaderProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -27,7 +24,7 @@ const Header = ({ theme, onThemeToggle, selectedCountry, onCountryChange, onMenu
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
-  const selectedCountryData = countries.find(c => c.code === selectedCountry) || countries[0];
+  // const selectedCountryData = countries.find(c => c.code === selectedCountry) || countries[0];
   
   // Mock search results - in a real app, this would query your API endpoints
   useEffect(() => {
@@ -122,65 +119,9 @@ const Header = ({ theme, onThemeToggle, selectedCountry, onCountryChange, onMenu
             <Search className="h-5 w-5" />
           </button>
           
-          {/* Country selector */}
-          <div className="relative">
-            <button
-              onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-              className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
-              <span>{selectedCountryData.flag}</span>
-              <span className="hidden sm:inline">{selectedCountryData.apiVersion}</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
 
-            <AnimatePresence>
-              {countryDropdownOpen && (
-                <motion.div
-                  className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <div className="py-1">
-                    {countries.map((country) => (
-                      <button
-                        key={country.code}
-                        onClick={() => {
-                          onCountryChange(country.code);
-                          setCountryDropdownOpen(false);
-                        }}
-                        className={`${
-                          selectedCountry === country.code
-                            ? 'bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                            : 'text-gray-700 dark:text-gray-300'
-                        } group flex items-center px-4 py-2 text-sm w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200`}
-                      >
-                        <span className="mr-3">{country.flag}</span>
-                        <div>
-                          <div className="font-medium">{country.name}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {country.apiVersion}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
-          {/* External links */}
-          <a 
-            href="https://github.com/example/raas-developer-portal" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hidden md:flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <span>GitHub</span>
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+
 
           {/* Theme toggle */}
           <motion.button

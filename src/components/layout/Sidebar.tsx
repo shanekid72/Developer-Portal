@@ -43,17 +43,7 @@ const navigationItems: NavigationItem[] = [
       { id: 'customer', title: 'Customer API', href: '/api-reference/customer' },
     ],
   },
-  {
-    id: 'guides',
-    title: 'Integration Guides',
-    icon: 'FileText',
-    children: [
-      { id: 'onboarding', title: 'Customer Onboarding', href: '/guides/onboarding' },
-      { id: 'transactions', title: 'Creating Transactions', href: '/guides/transactions' },
-      { id: 'rate-management', title: 'Rate Management', href: '/guides/rates' },
-      { id: 'error-handling', title: 'Error Handling', href: '/guides/errors' },
-    ],
-  },
+
   {
     id: 'resources',
     title: 'Resources',

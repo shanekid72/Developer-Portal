@@ -351,4 +351,129 @@ export const getBankByIdGuidelines = `
   <li>Use this endpoint to show detailed bank information in your UI</li>
   <li>Display branch information when available to help users select the correct branch</li>
 </ul>
+`;
+
+// Guidelines for the BRN Update endpoint
+export const brnUpdateGuidelines = `
+<h5>BRN Update Rules</h5>
+<ul>
+  <li>This endpoint allows updating the Bank Reference Number (BRN) for an existing transaction</li>
+  <li>The transaction must be in a valid state for BRN update</li>
+  <li>BRN updates are typically used when the bank provides a reference number after processing</li>
+  <li>Only one BRN update is allowed per transaction</li>
+</ul>
+
+<h5>Required Headers</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Name</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Content-Type</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">application/json</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">Authorization</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bearer token</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">sender</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Agent/Partner name</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">channel</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Direct</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">company</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Company code (provided)</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">branch</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Branch code (provided)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Required Payload</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">Field</th>
+      <th class="p-2">Data Type</th>
+      <th class="p-2">Mandatory</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">transaction_ref_number</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Transaction reference number to update</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">brn</td>
+      <td class="p-2">String</td>
+      <td class="p-2">Yes</td>
+      <td class="p-2">Bank Reference Number provided by the bank</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Transaction States for BRN Update</h5>
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left bg-gray-100 dark:bg-gray-800">
+      <th class="p-2">State</th>
+      <th class="p-2">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">CONFIRMED</td>
+      <td class="p-2">Transaction is confirmed and ready for BRN update</td>
+    </tr>
+    <tr class="border-b border-gray-200 dark:border-gray-700">
+      <td class="p-2 font-medium">PROCESSING</td>
+      <td class="p-2">Transaction is being processed by the bank</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5>Error Handling</h5>
+<ul>
+  <li>400 Bad Request: Invalid transaction reference or BRN format</li>
+  <li>401 Unauthorized: Invalid or expired token</li>
+  <li>404 Not Found: Transaction not found</li>
+  <li>409 Conflict: BRN already updated for this transaction</li>
+  <li>422 Unprocessable Entity: Transaction not in valid state for BRN update</li>
+  <li>500 Internal Server Error: System error</li>
+</ul>
+
+<h5>Best Practices</h5>
+<ul>
+  <li>Only update BRN when you receive the reference number from the bank</li>
+  <li>Store the BRN in your system for future reference</li>
+  <li>Use the Enquire Transaction API to verify the BRN was updated successfully</li>
+  <li>Implement proper error handling for cases where BRN update fails</li>
+</ul>
 `; 

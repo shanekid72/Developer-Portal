@@ -392,7 +392,7 @@ const APIReference = () => {
                 `}
               </style>
               <SwaggerUI 
-                url="/raas-api-spec.json"
+                url={`/raas-api-spec.json?v=${Date.now()}`}
                 docExpansion="list"
                 deepLinking={true}
                 filter={true}

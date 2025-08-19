@@ -204,88 +204,115 @@ const DynamicRequestForm: React.FC<DynamicRequestFormProps> = ({
         initialBody.bank_id = "11232";
         initialBody.branch_id = "22345";
       }
-    } else if (endpointTitle === 'Create Transaction') {
-      // Base structure for Create Transaction according to API documentation
-      initialBody = {
-        "sending_country_code": "AE",
-        "sending_currency_code": "AED",
-        "receiving_country_code": selectedCountry,
-        "receiving_currency_code": selectedCountryConfig?.currency || "PKR",
-        "sending_amount": 300,
-        "receiving_mode": selectedPayoutMode,
-        "type": "SEND",
-        "instrument": "REMITTANCE",
-        "quote_id": "1279125121873380",
-        "transaction": {
-          "quote_id": "1279125121873380"
-        },
-        "sender": {
-          "customer_number": "CUST001",
-          "first_name": "John",
-          "last_name": "Doe",
-          "mobile_number": "+971524524152",
-          "nationality": "AE",
-          "sender_address": {
-            "address_line1": "123 Main Street",
-            "city": "Dubai",
-            "state": "Dubai",
-            "country": "AE",
-            "postal_code": "12345"
+          } else if (endpointTitle === 'Create Transaction') {
+        // Minimal Create Transaction structure per documentation with documented example values
+        initialBody = {
+          "type": "SEND",
+          "source_of_income": "SLRY",
+          "purpose_of_txn": "SAVG",
+          "instrument": "REMITTANCE",
+          "sender": {
+            "customer_number": "7841003246699058"
           },
-          "id_details": {
-            "id_type": "EMIRATES_ID",
-            "id_number": "123456789012345"
+          "transaction": {
+            "quote_id": "{{quote_id}}"
           }
-        },
-        "receiver": {
-          "first_name": "Anija",
-          "last_name": "Smith",
-          "mobile_number": "+919586741508",
-          "nationality": selectedCountry,
-          "relation_code": "32"
-        },
-        "source_of_income": "SLRY",
-        "purpose_of_txn": "SAVG",
-        "message": "Agency transaction"
-      };
-      
-      // Add mode-specific fields for Create Transaction
+        };
+        
+        // Mode-specific fields with documented examples
       if (selectedPayoutMode === 'BANK') {
-        // For BANK mode, add bank_details to receiver
         if (selectedCountry === 'PK') {
-          initialBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "iso_code": "PKR",
-            "iban": "PK12ABCD1234567891234567"
+          initialBody.receiver = {
+            "mobile_number": "+919586741508",
+            "first_name": "Anija FirstName",
+            "last_name": "Anija Lastname",
+            "middle_name": " ",
+            "date_of_birth": "1990-08-22",
+            "gender": "F",
+            "receiver_address": [
+              {
+                "address_type": "PRESENT",
+                "address_line": "TCR",
+                "street_name": "TCRTESTESTETSTETSTDTST",
+                "building_number": "JIJIJJ",
+                "post_code": "9054",
+                "pobox": "658595",
+                "town_name": "THRISSUR",
+                "country_subdivision": "KOKOKOKOKK",
+                "country_code": "PK"
+              }
+            ],
+            "receiver_id": [],
+            "nationality": "PK",
+            "relation_code": "32",
+            "bank_details": {
+              "account_type_code": "1",
+              "account_number": "67095294579",
+              "iso_code": "ALFHPKKA068",
+              "iban": "PK12ABCD1234567891234567"
+            }
           };
-        } else if (selectedCountry === 'IN') {
-          initialBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "routing_code": "SBIN0000123"
-          };
-        } else if (selectedCountry === 'BD') {
-          initialBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "routing_code": "DBBLBDDH"
-          };
-        } else if (selectedCountry === 'PH') {
-          initialBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "routing_code": "BOPIPHMM"
-          };
+        } else {
+          initialBody.receiver = { bank_details: {} };
         }
       } else if (selectedPayoutMode === 'WALLET') {
-        // For WALLET mode, add wallet_details to receiver
-        initialBody.receiver.wallet_details = {
-          "wallet_provider": "JAZZCASH",
-          "wallet_number": "+919586741508"
-        };
+        if (selectedCountry === 'PK') {
+          initialBody.receiver = {
+            "mobile_number": "+919586741508",
+            "first_name": "Anija FirstName",
+            "last_name": "Anija Lastname",
+            "middle_name": " ",
+            "date_of_birth": "1990-08-22",
+            "gender": "F",
+            "receiver_address": [
+              {
+                "address_type": "PRESENT",
+                "address_line": "TCR",
+                "street_name": "TCRTESTESTETSTETSTDTST",
+                "building_number": "JIJIJJ",
+                "post_code": "9054",
+                "pobox": "658595",
+                "town_name": "THRISSUR",
+                "country_subdivision": "KOKOKOKOKK",
+                "country_code": "PK"
+              }
+            ],
+            "receiver_id": [],
+            "nationality": "PK",
+            "relation_code": "32",
+            "mobileWallet_details": {
+              "iso_code": "BMISEGCXXXX",
+              "wallet_id": "95867415081"
+            }
+          };
+        } else {
+          initialBody.receiver = {
+            wallet_details: {
+              "wallet_provider": "JAZZCASH",
+              "wallet_number": "+919586741508"
+            }
+          };
+        }
       } else if (selectedPayoutMode === 'CASH') {
-        // For CASH mode, add bank_id and branch_id at root level
+        if (selectedCountry === 'IN') {
+          initialBody.receiver = {
+            "mobile_number": "+919586741508",
+            "first_name": "Anija FirstName",
+            "last_name": "Anija Lastname",
+            "date_of_birth": "1990-08-22",
+            "gender": "F",
+            "receiver_address": [
+              {
+                "address_type": "PRESENT",
+                "address_line": "TCR",
+                "town_name": "THRISSUR",
+                "country_code": "IN"
+              }
+            ],
+            "nationality": "IN",
+            "relation_code": "32"
+          };
+        }
         initialBody.bank_id = "11232";
         initialBody.branch_id = "22345";
       }
@@ -354,87 +381,114 @@ const DynamicRequestForm: React.FC<DynamicRequestFormProps> = ({
         updatedBody.branch_id = "22345";
       }
     } else if (endpointTitle === 'Create Transaction') {
-      // Base structure for Create Transaction according to API documentation
+      // Minimal Create Transaction structure per documentation with documented example values
       updatedBody = {
-        "sending_country_code": "AE",
-        "sending_currency_code": "AED",
-        "receiving_country_code": selectedCountry,
-        "receiving_currency_code": selectedCountryConfig?.currency || "PKR",
-        "sending_amount": 300,
-        "receiving_mode": selectedPayoutMode,
         "type": "SEND",
-        "instrument": "REMITTANCE",
-        "quote_id": "1279125121873380",
-        "transaction": {
-          "quote_id": "1279125121873380"
-        },
-        "sender": {
-          "customer_number": "CUST001",
-          "first_name": "John",
-          "last_name": "Doe",
-          "mobile_number": "+971524524152",
-          "nationality": "AE",
-          "sender_address": {
-            "address_line1": "123 Main Street",
-            "city": "Dubai",
-            "state": "Dubai",
-            "country": "AE",
-            "postal_code": "12345"
-          },
-          "id_details": {
-            "id_type": "EMIRATES_ID",
-            "id_number": "123456789012345"
-          }
-        },
-        "receiver": {
-          "first_name": "Anija",
-          "last_name": "Smith",
-          "mobile_number": "+919586741508",
-          "nationality": selectedCountry,
-          "relation_code": "32"
-        },
         "source_of_income": "SLRY",
         "purpose_of_txn": "SAVG",
-        "message": "Agency transaction"
+        "instrument": "REMITTANCE",
+        "sender": {
+          "customer_number": "7841003246699058"
+        },
+        "transaction": {
+          "quote_id": "{{quote_id}}"
+        }
       };
       
-      // Add mode-specific fields for Create Transaction
+      // Mode-specific fields with documented examples
       if (selectedPayoutMode === 'BANK') {
-        // For BANK mode, add bank_details to receiver
         if (selectedCountry === 'PK') {
-          updatedBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "iso_code": "PKR",
-            "iban": "PK12ABCD1234567891234567"
+          updatedBody.receiver = {
+            "mobile_number": "+919586741508",
+            "first_name": "Anija FirstName",
+            "last_name": "Anija Lastname",
+            "middle_name": " ",
+            "date_of_birth": "1990-08-22",
+            "gender": "F",
+            "receiver_address": [
+              {
+                "address_type": "PRESENT",
+                "address_line": "TCR",
+                "street_name": "TCRTESTESTETSTETSTDTST",
+                "building_number": "JIJIJJ",
+                "post_code": "9054",
+                "pobox": "658595",
+                "town_name": "THRISSUR",
+                "country_subdivision": "KOKOKOKOKK",
+                "country_code": "PK"
+              }
+            ],
+            "receiver_id": [],
+            "nationality": "PK",
+            "relation_code": "32",
+            "bank_details": {
+              "account_type_code": "1",
+              "account_number": "67095294579",
+              "iso_code": "ALFHPKKA068",
+              "iban": "PK12ABCD1234567891234567"
+            }
           };
-        } else if (selectedCountry === 'IN') {
-          updatedBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "routing_code": "SBIN0000123"
-          };
-        } else if (selectedCountry === 'BD') {
-          updatedBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "routing_code": "DBBLBDDH"
-          };
-        } else if (selectedCountry === 'PH') {
-          updatedBody.receiver.bank_details = {
-            "account_type_code": "SAVINGS",
-            "account_number": "1234567890",
-            "routing_code": "BOPIPHMM"
-          };
+        } else {
+          updatedBody.receiver = { bank_details: {} };
         }
       } else if (selectedPayoutMode === 'WALLET') {
-        // For WALLET mode, add wallet_details to receiver
-        updatedBody.receiver.wallet_details = {
-          "wallet_provider": "JAZZCASH",
-          "wallet_number": "+919586741508"
-        };
+        if (selectedCountry === 'PK') {
+          updatedBody.receiver = {
+            "mobile_number": "+919586741508",
+            "first_name": "Anija FirstName",
+            "last_name": "Anija Lastname",
+            "middle_name": " ",
+            "date_of_birth": "1990-08-22",
+            "gender": "F",
+            "receiver_address": [
+              {
+                "address_type": "PRESENT",
+                "address_line": "TCR",
+                "street_name": "TCRTESTESTETSTETSTDTST",
+                "building_number": "JIJIJJ",
+                "post_code": "9054",
+                "pobox": "658595",
+                "town_name": "THRISSUR",
+                "country_subdivision": "KOKOKOKOKK",
+                "country_code": "PK"
+              }
+            ],
+            "receiver_id": [],
+            "nationality": "PK",
+            "relation_code": "32",
+            "mobileWallet_details": {
+              "iso_code": "BMISEGCXXXX",
+              "wallet_id": "95867415081"
+            }
+          };
+        } else {
+          updatedBody.receiver = {
+            wallet_details: {
+              "wallet_provider": "JAZZCASH",
+              "wallet_number": "+919586741508"
+            }
+          };
+        }
       } else if (selectedPayoutMode === 'CASH') {
-        // For CASH mode, add bank_id and branch_id at root level
+        if (selectedCountry === 'IN') {
+          updatedBody.receiver = {
+            "mobile_number": "+919586741508",
+            "first_name": "Anija FirstName",
+            "last_name": "Anija Lastname",
+            "date_of_birth": "1990-08-22",
+            "gender": "F",
+            "receiver_address": [
+              {
+                "address_type": "PRESENT",
+                "address_line": "TCR",
+                "town_name": "THRISSUR",
+                "country_code": "IN"
+              }
+            ],
+            "nationality": "IN",
+            "relation_code": "32"
+          };
+        }
         updatedBody.bank_id = "11232";
         updatedBody.branch_id = "22345";
       }
@@ -544,7 +598,7 @@ const DynamicRequestForm: React.FC<DynamicRequestFormProps> = ({
                       "quote_id": "1279125121873380"
                     },
                     "sender": {
-                      "customer_number": "CUST001",
+                      "customer_number": "1000001220000001",
                       "first_name": "John",
                       "last_name": "Doe",
                       "mobile_number": "+971524524152",
@@ -708,7 +762,7 @@ const DynamicRequestForm: React.FC<DynamicRequestFormProps> = ({
                       "quote_id": "1279125121873380"
                     },
                     "sender": {
-                      "customer_number": "CUST001",
+                      "customer_number": "1000001220000001",
                       "first_name": "John",
                       "last_name": "Doe",
                       "mobile_number": "+971524524152",

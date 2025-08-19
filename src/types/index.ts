@@ -1,7 +1,7 @@
 export interface APIEndpoint {
   id: string;
   title: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'SECTION';
   path: string;
   description: string;
   parameters?: Parameter[];
@@ -14,6 +14,9 @@ export interface APIEndpoint {
   codeExamples: CodeExample[];
   guidelines?: string;
   errorCodes?: string;
+  isCollapsible?: boolean;
+  isSection?: boolean;
+  nestedEndpoints?: APIEndpoint[];
 }
 
 export interface Parameter {
@@ -35,6 +38,7 @@ export interface QueryParameter {
   name: string;
   description: string;
   required: boolean;
+  defaultValue?: string;
 }
 
 export interface RequestBody {

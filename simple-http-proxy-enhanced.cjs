@@ -20,6 +20,11 @@ let codesCache = null;
 let codesCacheExpiry = 0;
 const CODES_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
+// Service Corridor API cache
+let serviceCorridorCache = null;
+let serviceCorridorCacheExpiry = 0;
+const SERVICE_CORRIDOR_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
 // Configuration
 const PORT = 3001;
 const TARGET_HOST = 'drap-sandbox.digitnine.com';
@@ -150,7 +155,7 @@ function parseRequestBody(req) {
  */
 async function forwardRequest(req, res, path, body, token) {
   // More retries for Get Codes API due to large response and intermittent timeouts
-  const maxRetries = path.includes('/raas/masters/v1/codes') ? 5 : 3;
+  const maxRetries = path.includes('/raas/masters/v1/codes') || path.includes('/raas/masters/v1/service-corridor') ? 5 : 3;
   let retryCount = 0;
   
   const attemptRequest = () => {
@@ -189,7 +194,7 @@ async function forwardRequest(req, res, path, body, token) {
         path: path,
         method: req.method,
         headers: headers,
-        timeout: path.includes('/raas/masters/v1/codes') ? 180000 : 120000 // 3 minutes for Get Codes, 2 minutes for others
+        timeout: path.includes('/raas/masters/v1/codes') || path.includes('/raas/masters/v1/service-corridor') ? 180000 : 120000 // 3 minutes for Get Codes and Service Corridor, 2 minutes for others
       };
       
       console.log(`Forwarding ${req.method} request to: https://${TARGET_HOST}${path} (attempt ${retryCount + 1}/${maxRetries})`);
@@ -234,6 +239,13 @@ async function forwardRequest(req, res, path, body, token) {
             codesCache = responseData;
             codesCacheExpiry = Date.now() + CODES_CACHE_DURATION;
             console.log('Cached Get Codes response for 30 minutes');
+          }
+
+          // Cache successful Service Corridor responses
+          if (path.includes('/raas/masters/v1/service-corridor') && proxyRes.statusCode === 200) {
+            serviceCorridorCache = responseData;
+            serviceCorridorCacheExpiry = Date.now() + SERVICE_CORRIDOR_CACHE_DURATION;
+            console.log('Cached Service Corridor response for 30 minutes');
           }
           
           try {
@@ -282,6 +294,20 @@ async function forwardRequest(req, res, path, body, token) {
       if (retryCount >= maxRetries) {
         // All retries exhausted
         console.error('All retry attempts failed');
+        
+        // Return cached data as fallback for service corridor API
+        if (path.includes('/raas/masters/v1/service-corridor') && serviceCorridorCache) {
+          console.log('Returning cached Service Corridor response as fallback');
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', '*');
+          res.setHeader('X-Cache', 'FALLBACK');
+          res.end(serviceCorridorCache);
+          return;
+        }
+        
         res.statusCode = 500;
         res.end(JSON.stringify({
           status: 'failure',
@@ -293,7 +319,7 @@ async function forwardRequest(req, res, path, body, token) {
       }
       
       // Wait before retrying (exponential backoff with longer delays for Get Codes)
-      const baseDelay = path.includes('/raas/masters/v1/codes') ? 2000 : 1000;
+      const baseDelay = path.includes('/raas/masters/v1/codes') || path.includes('/raas/masters/v1/service-corridor') ? 2000 : 1000;
       const delay = Math.min(baseDelay * Math.pow(2, retryCount - 1), 10000);
       console.log(`Waiting ${delay}ms before retry...`);
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -459,6 +485,19 @@ async function handleGenericRequest(req, res, path) {
       res.setHeader('Access-Control-Allow-Headers', '*');
       res.setHeader('X-Cache', 'HIT');
       res.end(codesCache);
+      return;
+    }
+
+    // Check cache for Service Corridor API
+    if (path.includes('/raas/masters/v1/service-corridor') && serviceCorridorCache && Date.now() < serviceCorridorCacheExpiry) {
+      console.log('Returning cached Service Corridor response');
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.setHeader('X-Cache', 'HIT');
+      res.end(serviceCorridorCache);
       return;
     }
     

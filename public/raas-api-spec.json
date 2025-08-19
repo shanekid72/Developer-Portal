@@ -878,6 +878,320 @@
         }
       }
     },
+    "/amr/ras/api/v1_0/ras/brn-update": {
+      "post": {
+        "tags": ["Transactions"],
+        "summary": "BRN Update",
+        "description": "Update the BRN (Bank Reference Number) for a transaction",
+        "operationId": "brnUpdate",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sender",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 60,
+              "example": "testagentae"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 30,
+              "example": "Direct"
+            }
+          },
+          {
+            "name": "company",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 6,
+              "example": "784825"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 6,
+              "example": "784826"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_ref_number": {
+                    "type": "string",
+                    "maxLength": 16,
+                    "description": "Transaction reference number. Unique number to identify the transaction.",
+                    "example": "{{transaction_ref_number}}"
+                  },
+                  "bank_ref_number": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "description": "Bank reference number",
+                    "example": "BRN123456789"
+                  },
+                  "customer_bank_name": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "description": "bank name",
+                    "example": "Sample Bank"
+                  },
+                  "deposit_account_id": {
+                    "type": "string",
+                    "maxLength": 18,
+                    "description": "deposit account id",
+                    "example": "123456789012345678"
+                  },
+                  "payment_initiated": {
+                    "type": "string",
+                    "description": "payment_initiated should be in the format of (yyyy-MM-dd'T'HH:mm:ss)",
+                    "example": "2023-11-01T14:30:45"
+                  },
+                  "customer_name": {
+                    "type": "string",
+                    "description": "customer name",
+                    "example": "John Doe"
+                  },
+                  "payment_id": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "description": "payment id",
+                    "example": "PAY123456789"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "decimal",
+                    "description": "Amount",
+                    "example": 1000.50
+                  },
+                  "match_type": {
+                    "type": "string",
+                    "enum": ["MATCH", "UNMATCH", "PARTIAL"],
+                    "description": "MATCH, UNMATCH, PARTIAL",
+                    "example": "MATCH"
+                  },
+                  "is_reconciled": {
+                    "type": "string",
+                    "enum": ["TRUE", "FALSE"],
+                    "description": "TRUE/FALSE",
+                    "example": "TRUE"
+                  },
+                  "payment_provider_type": {
+                    "type": "string",
+                    "enum": ["CHECKOUT_MASTER", "CHECKOUT_VISA"],
+                    "description": "CHECKOUT_MASTER/CHECKOUT_VISA",
+                    "example": "CHECKOUT_MASTER"
+                  }
+                },
+                "required": ["transaction_ref_number", "bank_ref_number", "is_reconciled"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "BRN updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                                      "status": {
+                    "type": "string",
+                    "example": "success"
+                  },
+                  "status_code": {
+                    "type": "string",
+                    "example": "200"
+                  },
+                  "status_message": {
+                    "type": "string",
+                    "example": "BRN updated successfully"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "transaction_ref_number": {
+                        "type": "string",
+                        "example": "{{transaction_ref_number}}"
+                      },
+                      "bank_ref_number": {
+                        "type": "string",
+                        "example": "BRN123456789"
+                      },
+                      "state": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "example": "BRN_UPDATED"
+                      },
+                      "sub_state": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "example": "SUCCESS"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-11-01T14:30:45Z"
+                      }
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid transaction reference or BRN"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/amr/ras/api/v1_0/ras/transaction-status-callback": {
+      "post": {
+        "tags": ["Callbacks"],
+        "summary": "Transaction Status Callback",
+        "description": "Receive real-time transaction status updates via webhook",
+        "operationId": "transactionStatusCallback",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "SHA512 hash for integrity validation"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_ref_number": {
+                    "type": "string",
+                    "maxLength": 16,
+                    "description": "Transaction reference number. Unique number to identify the transaction.",
+                    "example": "5712122130661730"
+                  },
+                  "state": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "description": "Status code",
+                    "example": "COMPLETED"
+                  },
+                  "sub_state": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "description": "Sub state code",
+                    "example": "CREDITED"
+                  }
+                },
+                "required": ["transaction_ref_number", "state", "sub_state"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook received successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "example": "ACKNOWLEDGED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid webhook payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid payload format"
+                    },
+                    "error_code": {
+                      "type": "string",
+                      "example": "WEBHOOK_001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid webhook signature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid signature"
+                    },
+                    "error_code": {
+                      "type": "string",
+                      "example": "WEBHOOK_002"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/caas/api/v2/customer/validate": {
       "post": {
         "tags": ["Customer"],

@@ -11,16 +11,12 @@ interface MainLayoutProps {
   children: ReactNode;
   theme: Theme;
   onThemeToggle: () => void;
-  selectedCountry: string;
-  onCountryChange: (country: string) => void;
 }
 
 const MainLayout = ({ 
   children, 
   theme, 
-  onThemeToggle, 
-  selectedCountry, 
-  onCountryChange 
+  onThemeToggle
 }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -127,8 +123,6 @@ const MainLayout = ({
         <Header
           theme={theme}
           onThemeToggle={onThemeToggle}
-          selectedCountry={selectedCountry}
-          onCountryChange={onCountryChange}
           onMenuClick={() => setSidebarOpen(true)}
         />
         

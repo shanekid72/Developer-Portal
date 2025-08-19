@@ -33,6 +33,22 @@ const debugToken = () => {
   console.log('=====================');
 };
 
+// Transaction reference number management functions
+const getTransactionRefNumber = () => {
+  const transactionRefNumber = localStorage.getItem('raas_transaction_ref_number') || '';
+  return transactionRefNumber;
+};
+
+const setTransactionRefNumber = (transactionRefNumber: string) => {
+  localStorage.setItem('raas_transaction_ref_number', transactionRefNumber);
+  console.log('💾 Transaction reference number saved to localStorage:', transactionRefNumber);
+};
+
+const clearTransactionRefNumber = () => {
+  localStorage.removeItem('raas_transaction_ref_number');
+  console.log('🗑️ Transaction reference number cleared from localStorage');
+};
+
 const SandboxTestingPage = () => {
   const [activeTab, setActiveTab] = useState('authentication');
   const [accessToken, setAccessTokenState] = useState(getAccessToken);
@@ -130,13 +146,12 @@ const SandboxTestingPage = () => {
         },
         {
           id: 'master-banks',
-          name: 'Master Banks',
+          name: 'Get Bank Master',
           method: 'GET',
           url: '/raas/masters/v1/banks',
-          description: 'Get list of available banks',
+          description: 'Retrieve bank details by ID',
           queryParams: {
-            receiving_country_code: 'PK',
-            receiving_mode: 'CASHPICKUP'
+            receiving_country_code: 'PK'
           },
           headers: {
             'Content-Type': 'application/json'
@@ -186,23 +201,40 @@ const SandboxTestingPage = () => {
             instrument: 'REMITTANCE',
             message: 'Agency transaction',
             sender: {
-              customer_number: '7841001220007002'
+              customer_number: '1000001220000001'
             },
             receiver: {
               mobile_number: '+919586741508',
               first_name: 'Anija FirstName',
               last_name: 'Anija Lastname',
-              nationality: 'IN',
+              middle_name: '',
+              date_of_birth: '1990-08-22',
+              gender: 'F',
+              receiver_address: [
+                {
+                  address_type: 'PRESENT',
+                  address_line: 'TCR',
+                  street_name: 'TCRTESTESTETSTETSTDTST',
+                  building_number: 'JIJIJJ',
+                  post_code: '9054',
+                  pobox: '658595',
+                  town_name: 'THRISSUR',
+                  country_subdivision: 'KOKOKOKOKK',
+                  country_code: 'PK'
+                }
+              ],
+              receiver_id: [],
+              nationality: 'PK',
               relation_code: '32',
               bank_details: {
                 account_type_code: '1',
-                iso_code: 'BKIPPKKA',
+                account_number: '67095294579',
+                iso_code: 'ALFHPKKA068',
                 iban: 'PK12ABCD1234567891234567'
               }
             },
             transaction: {
-              quote_id: '{{quote_id}}',
-              agent_transaction_ref_number: '{{quote_id}}'
+              quote_id: '{{quote_id}}'
             }
           },
           headers: {
@@ -410,9 +442,23 @@ const SandboxTestingPage = () => {
         if (method === 'POST' || method === 'PUT') {
           // If the endpoint has a predefined requestBody and no custom one has been set,
           // use the predefined one
-          const bodyToSend = Object.keys(requestBody).length > 0 
+          let bodyToSend = Object.keys(requestBody).length > 0 
             ? requestBody 
             : ('requestBody' in endpoint && endpoint.requestBody ? endpoint.requestBody : {});
+          
+          // Handle placeholder replacement for transaction reference number
+          if (endpoint.id === 'confirm-transaction' || endpoint.id === 'enquire-transaction') {
+            const transactionRefNumber = getTransactionRefNumber();
+            if (transactionRefNumber) {
+              // Replace placeholder with actual transaction reference number
+              const bodyString = JSON.stringify(bodyToSend);
+              const updatedBodyString = bodyString.replace(/{{transaction_ref_number}}/g, transactionRefNumber);
+              bodyToSend = JSON.parse(updatedBodyString);
+              console.log('✅ Replaced transaction_ref_number placeholder with:', transactionRefNumber);
+            } else {
+              console.warn('⚠️ No transaction reference number available for placeholder replacement');
+            }
+          }
             
           const body = JSON.stringify(bodyToSend);
           options.body = body;
@@ -427,6 +473,22 @@ const SandboxTestingPage = () => {
         }
         
         const data = await response.json();
+        
+        // Save transaction reference number if this is a successful Create Transaction response
+        if (endpoint.id === 'create-transaction' && 
+            data.data && 
+            data.data.transaction_ref_number && 
+            response.ok) {
+          setTransactionRefNumber(data.data.transaction_ref_number);
+          console.log('✅ Transaction reference number saved automatically:', data.data.transaction_ref_number);
+        }
+        
+        // Clear transaction reference number if this is a successful Confirm Transaction response
+        if (endpoint.id === 'confirm-transaction' && response.ok) {
+          clearTransactionRefNumber();
+          console.log('🔄 Transaction reference number cleared after successful confirmation');
+        }
+        
         setResponseData(data);
       }
 

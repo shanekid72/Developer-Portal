@@ -11,51 +11,113 @@ const url = require('url');
 const querystring = require('querystring');
 const { Buffer } = require('buffer');
 
-// Authentication cache
+const PORT = 3001;
+const TARGET_HOST = 'drap-sandbox.digitnine.com';
+
+// Enhanced caching for all APIs
+let apiCache = new Map();
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour for most APIs
+const CODES_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours for codes (rarely changes)
+const SERVICE_CORRIDOR_CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours for service corridor
+
+// Auth token management
 let authToken = null;
 let tokenExpiry = 0;
 
-// Configuration
-const PORT = 3001;
-const TARGET_HOST = 'drap-sandbox.digitnine.com';
-const AUTH_ENDPOINT = '/auth/realms/cdp/protocol/openid-connect/token';
+// Performance tracking
+let requestCount = 0;
+let cacheHitCount = 0;
 
-// Authentication credentials
-const AUTH_CREDENTIALS = {
-  username: 'testagentae',
-  password: 'Admin@123',
-  grant_type: 'password',
-  client_id: 'cdp_app',
-  client_secret: 'mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y'
-};
+function getCacheKey(path, method, body = '') {
+  return `${method}:${path}:${body}`;
+}
 
-/**
- * Get authentication token
- * @returns {Promise<string>} The authentication token
- */
+function getCacheDuration(path) {
+  if (path.includes('/raas/masters/v1/codes')) {
+    return CODES_CACHE_DURATION;
+  }
+  if (path.includes('/raas/masters/v1/service-corridor')) {
+    return SERVICE_CORRIDOR_CACHE_DURATION;
+  }
+  if (path.includes('/raas/masters/v1/rates')) {
+    return 30 * 60 * 1000; // 30 minutes for rates
+  }
+  return CACHE_DURATION;
+}
+
+function getCachedResponse(path, method, body = '') {
+  const key = getCacheKey(path, method, body);
+  const cached = apiCache.get(key);
+  
+  if (cached && Date.now() < cached.expiry) {
+    cacheHitCount++;
+    console.log(`🎯 Cache HIT for ${path} (${cacheHitCount} hits, ${requestCount} total requests)`);
+    return cached.data;
+  }
+  
+  return null;
+}
+
+function setCachedResponse(path, method, body, data) {
+  const key = getCacheKey(path, method, body);
+  const duration = getCacheDuration(path);
+  
+  apiCache.set(key, {
+    data: data,
+    expiry: Date.now() + duration,
+    timestamp: Date.now()
+  });
+  
+  console.log(`💾 Cached ${path} for ${Math.round(duration / 60000)} minutes`);
+}
+
+// Clean up expired cache entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  let cleaned = 0;
+  
+  for (const [key, value] of apiCache.entries()) {
+    if (now > value.expiry) {
+      apiCache.delete(key);
+      cleaned++;
+    }
+  }
+  
+  if (cleaned > 0) {
+    console.log(`🧹 Cleaned ${cleaned} expired cache entries`);
+  }
+}, 10 * 60 * 1000);
+
 async function getAuthToken() {
-  if (authToken && Date.now() < tokenExpiry) {
-    console.log('Using cached auth token');
+  const now = Date.now();
+  
+  // Return cached token if still valid (with 5-minute buffer)
+  if (authToken && now < tokenExpiry - 300000) {
     return authToken;
   }
-
-  console.log('Getting new auth token...');
+  
+  console.log('🔑 Getting new auth token...');
+  
+  const authData = new URLSearchParams({
+    grant_type: 'password',
+    username: 'testagentae',
+    password: 'Admin@123',
+    client_id: 'cdp_app',
+    client_secret: 'mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y'
+  });
+  
+  const options = {
+    hostname: TARGET_HOST,
+    port: 443,
+    path: '/auth/realms/cdp/protocol/openid-connect/token',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(authData.toString())
+    }
+  };
   
   return new Promise((resolve, reject) => {
-    const postData = querystring.stringify(AUTH_CREDENTIALS);
-    
-    const options = {
-      hostname: TARGET_HOST,
-      port: 443,
-      path: AUTH_ENDPOINT,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(postData)
-      },
-      timeout: 30000 // 30 seconds timeout for auth
-    };
-
     const req = https.request(options, (res) => {
       let data = '';
       
@@ -64,32 +126,30 @@ async function getAuthToken() {
       });
       
       res.on('end', () => {
-        if (res.statusCode !== 200) {
-          console.error(`Auth request failed with status ${res.statusCode}`);
-          console.error(`Response: ${data}`);
-          return reject(new Error(`Auth failed with status ${res.statusCode}`));
-        }
-        
         try {
           const response = JSON.parse(data);
-          authToken = response.access_token;
-          // Set expiry to 4 minutes (token is valid for 5 minutes)
-          tokenExpiry = Date.now() + (4 * 60 * 1000);
-          console.log('New auth token obtained');
-          resolve(authToken);
+          if (response.access_token) {
+            authToken = response.access_token;
+            tokenExpiry = now + (response.expires_in * 1000);
+            console.log('✅ New auth token obtained');
+            resolve(authToken);
+          } else {
+            console.error('❌ Auth failed:', response);
+            reject(new Error('Auth failed'));
+          }
         } catch (error) {
-          console.error('Error parsing auth response:', error);
+          console.error('❌ Auth response parsing failed:', error);
           reject(error);
         }
       });
     });
     
     req.on('error', (error) => {
-      console.error('Error in auth request:', error);
+      console.error('❌ Auth request failed:', error);
       reject(error);
     });
     
-    req.write(postData);
+    req.write(authData.toString());
     req.end();
   });
 }
@@ -135,115 +195,184 @@ function parseRequestBody(req) {
   });
 }
 
-/**
- * Forward the request to the target server
- * @param {http.IncomingMessage} req - The client request
- * @param {http.ServerResponse} res - The client response
- * @param {string} path - The target path
- * @param {any} body - The request body
- * @param {string} token - The authentication token
- */
-async function forwardRequest(req, res, path, body, token) {
-  return new Promise((resolve, reject) => {
-    // Prepare headers
-    const headers = {
-      'Content-Type': req.headers['content-type'] || 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'sender': req.headers['sender'] || 'testagentae',
-      'channel': req.headers['channel'] || 'Direct',
-      'company': req.headers['company'] || '784825',
-      'branch': req.headers['branch'] || '784826',
-      'Connection': 'keep-alive',
-      'Accept': 'application/json',
-      'Accept-Encoding': 'gzip, deflate'
-    };
-    
-    // Prepare request body
-    let postData = '';
-    if (body) {
-      if (typeof body === 'string') {
-        postData = body;
-      } else if (headers['Content-Type'].includes('application/json')) {
-        postData = JSON.stringify(body);
-        headers['Content-Length'] = Buffer.byteLength(postData);
-      } else if (headers['Content-Type'].includes('application/x-www-form-urlencoded')) {
-        postData = querystring.stringify(body);
-        headers['Content-Length'] = Buffer.byteLength(postData);
+async function forwardRequest(req, res, path) {
+  requestCount++;
+  
+  try {
+    // Check cache first for GET requests
+    if (req.method === 'GET') {
+      const cachedResponse = getCachedResponse(path, req.method);
+      if (cachedResponse) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', '*');
+        res.setHeader('X-Cache', 'HIT');
+        res.setHeader('X-Cache-Hits', cacheHitCount.toString());
+        res.setHeader('X-Total-Requests', requestCount.toString());
+        res.end(cachedResponse);
+        return;
       }
     }
     
-    // Request options with longer timeout for Get Codes API
+    // Get auth token for API requests
+    let token = null;
+    if (!path.includes('/auth/')) {
+      token = await getAuthToken();
+    }
+    
+    // Prepare request body for POST requests
+    let requestBody = '';
+    if (req.method === 'POST') {
+      requestBody = await new Promise((resolve) => {
+        let body = '';
+        req.on('data', (chunk) => {
+          body += chunk;
+        });
+        req.on('end', () => {
+          resolve(body);
+        });
+      });
+    }
+    
+    // Check cache for POST requests with body
+    if (req.method === 'POST' && requestBody) {
+      const cachedResponse = getCachedResponse(path, req.method, requestBody);
+      if (cachedResponse) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', '*');
+        res.setHeader('X-Cache', 'HIT');
+        res.setHeader('X-Cache-Hits', cacheHitCount.toString());
+        res.setHeader('X-Total-Requests', requestCount.toString());
+        res.end(cachedResponse);
+        return;
+      }
+    }
+    
+    console.log(`🚀 Forwarding ${req.method} request to: ${path}`);
+    
     const options = {
       hostname: TARGET_HOST,
       port: 443,
       path: path,
       method: req.method,
-      headers: headers,
-      timeout: 600000 // 10 minutes for all APIs to prevent timeouts
+      headers: {
+        ...req.headers,
+        host: TARGET_HOST
+      },
+      timeout: 30000 // 30 seconds timeout
     };
     
-    console.log(`Forwarding ${req.method} request to: https://${TARGET_HOST}${path}`);
+    // Add auth token if available
+    if (token) {
+      options.headers['Authorization'] = `Bearer ${token}`;
+    }
     
     const proxyReq = https.request(options, (proxyRes) => {
-      // Set status code
-      res.statusCode = proxyRes.statusCode;
-      
-      // Forward response headers
-      Object.keys(proxyRes.headers).forEach((key) => {
-        if (!['transfer-encoding', 'connection'].includes(key.toLowerCase())) {
-          res.setHeader(key, proxyRes.headers[key]);
-        }
-      });
-      
-      // Set CORS headers
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', '*');
-      
-      // Forward response body
-      proxyRes.pipe(res);
-      
-      // Log response
       let responseData = '';
+      
       proxyRes.on('data', (chunk) => {
         responseData += chunk;
       });
       
       proxyRes.on('end', () => {
-        console.log(`Response status: ${proxyRes.statusCode}`);
+        // Set response headers
+        res.statusCode = proxyRes.statusCode;
+        Object.keys(proxyRes.headers).forEach(key => {
+          if (key.toLowerCase() !== 'transfer-encoding') {
+            res.setHeader(key, proxyRes.headers[key]);
+          }
+        });
         
-        try {
-          // Try to parse and log JSON response
-          const jsonResponse = JSON.parse(responseData);
-          console.log('Response data:', JSON.stringify(jsonResponse).substring(0, 200) + '...');
-        } catch (e) {
-          // Log raw response if not JSON
-          console.log('Response data:', responseData.substring(0, 200) + '...');
+        // Add CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', '*');
+        res.setHeader('X-Cache', 'MISS');
+        res.setHeader('X-Cache-Hits', cacheHitCount.toString());
+        res.setHeader('X-Total-Requests', requestCount.toString());
+        
+        // Cache successful responses
+        if (proxyRes.statusCode === 200 && responseData) {
+          try {
+            const parsed = JSON.parse(responseData);
+            if (parsed.status === 'success') {
+              setCachedResponse(path, req.method, requestBody, responseData);
+            }
+          } catch (e) {
+            // Not JSON, don't cache
+          }
         }
         
-        // Resolve on successful response
-        resolve();
+        res.end(responseData);
       });
     });
     
     proxyReq.on('error', (error) => {
-      console.error('Error in proxy request:', error);
-      reject(error);
+      console.error('❌ Proxy request error:', error);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.end(JSON.stringify({
+        status: 'failure',
+        status_code: 500,
+        error_code: 50000,
+        message: 'Internal Server Error',
+        details: {
+          message: 'An error occurred while processing the request.'
+        }
+      }));
     });
     
     proxyReq.on('timeout', () => {
-      console.error('Timeout in proxy request');
+      console.error('⏰ Request timeout');
       proxyReq.destroy();
-      reject(new Error('Request timeout'));
+      res.statusCode = 408;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.end(JSON.stringify({
+        status: 'failure',
+        status_code: 408,
+        error_code: 40800,
+        message: 'Request Timeout',
+        details: {
+          message: 'The request took too long to complete.'
+        }
+      }));
     });
     
-    // Write request body for non-GET requests
-    if (req.method !== 'GET' && postData) {
-      proxyReq.write(postData);
+    // Forward request body for POST requests
+    if (req.method === 'POST' && requestBody) {
+      proxyReq.write(requestBody);
     }
     
     proxyReq.end();
-  });
+    
+  } catch (error) {
+    console.error('❌ Error in forwardRequest:', error);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.end(JSON.stringify({
+      status: 'failure',
+      status_code: 500,
+      error_code: 50000,
+      message: 'Internal Server Error',
+      details: {
+        message: error.message
+      }
+    }));
+  }
 }
 
 /**
@@ -341,30 +470,24 @@ async function handleAuthRequest(req, res, path) {
   }
 }
 
-/**
- * Handle generic API requests
- * @param {http.IncomingMessage} req - The client request
- * @param {http.ServerResponse} res - The client response
- * @param {string} path - The target path
- */
 async function handleGenericRequest(req, res, path) {
   try {
-    // Get auth token
-    const token = await getAuthToken();
-    
-    // Parse request body
-    const body = await parseRequestBody(req);
-    
-    // Forward the request
-    await forwardRequest(req, res, path, body, token);
+    await forwardRequest(req, res, path);
   } catch (error) {
-    console.error('Error handling generic request:', error);
+    console.error('❌ Error handling generic request:', error);
     res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     res.end(JSON.stringify({
       status: 'failure',
+      status_code: 500,
       error_code: 50000,
-      message: 'Request failed',
-      details: { description: error.message }
+      message: 'Internal Server Error',
+      details: {
+        message: error.message
+      }
     }));
   }
 }
@@ -383,61 +506,66 @@ function handleOptionsRequest(res) {
 }
 
 // Create the HTTP server
-const server = http.createServer(async (req, res) => {
-  // Set default content type
-  res.setHeader('Content-Type', 'application/json');
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+  const path = parsedUrl.pathname;
   
-  // Parse the URL
-  const parsedUrl = url.parse(req.url || '', true);
-  const path = parsedUrl.pathname || '';
+  console.log(`📥 Received ${req.method} request for: ${path}`);
   
-  console.log(`Received ${req.method} request for: ${path}`);
-  
-  // Handle OPTIONS requests for CORS preflight
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return handleOptionsRequest(res);
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': '*'
+    });
+    res.end();
+    return;
   }
   
-  // Health check endpoint
-  if (path === '/' || path === '/health') {
-    res.statusCode = 200;
-    return res.end(JSON.stringify({
-      status: 'success',
-      message: 'Simple HTTP Proxy Server is running',
-      features: {
-        timeout: '10-minute timeout for all APIs to prevent timeouts',
-        auth: 'Automatic token management'
-      }
+  // Handle health check
+  if (path === '/health') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    });
+    res.end(JSON.stringify({
+      status: 'healthy',
+      cache_size: apiCache.size,
+      cache_hits: cacheHitCount,
+      total_requests: requestCount,
+      cache_hit_rate: requestCount > 0 ? Math.round((cacheHitCount / requestCount) * 100) : 0
     }));
+    return;
   }
   
-  // Check if this is an API request
+  // Handle API requests
   if (path.startsWith('/api/')) {
-    // Remove the /api prefix to get the actual target path
-    const targetPath = path.replace(/^\/api/, '');
-    
-    // Handle auth endpoint separately
-    if (targetPath.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
-      return handleAuthRequest(req, res, targetPath);
-    }
-    
-    // Handle all other API requests
-    return handleGenericRequest(req, res, targetPath);
+    const apiPath = path.substring(4); // Remove '/api' prefix
+    handleGenericRequest(req, res, apiPath);
+    return;
   }
   
-  // Handle 404 for unknown endpoints
-  res.statusCode = 404;
+  // Default response
+  res.writeHead(404, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  });
   res.end(JSON.stringify({
     status: 'failure',
+    status_code: 404,
     error_code: 40400,
-    message: 'Endpoint not found',
-    details: { description: `No handler defined for ${path}` }
+    message: 'Not Found',
+    details: {
+      message: 'The requested resource was not found.'
+    }
   }));
 });
 
-// Start the server
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Simple HTTP Proxy Server running on port ${PORT}`);
-  console.log(`Access the API through: http://localhost:${PORT}/api/...`);
-  console.log('Features: 10-minute timeout for all APIs, Automatic token management');
+server.listen(PORT, () => {
+  console.log(`🚀 Enhanced HTTP Proxy Server running on port ${PORT}`);
+  console.log(`🌐 Access the API through: http://localhost:${PORT}/api/...`);
+  console.log(`⚡ Features: Aggressive caching, Performance tracking, 30s timeout`);
+  console.log(`💾 Cache durations: Codes (24h), Service Corridor (12h), Rates (30m), Others (1h)`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
 }); 

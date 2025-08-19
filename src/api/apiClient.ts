@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Direct API URL - no proxy
-const BASE_URL = "https://drap-sandbox.digitnine.com";
+// Use proxy server to avoid CORS issues
+const BASE_URL = "http://localhost:3001/api";
 
 /**
  * Makes API calls to the backend

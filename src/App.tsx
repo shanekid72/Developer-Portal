@@ -18,7 +18,7 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 function App() {
   const [theme, setTheme] = useState<Theme>({ mode: 'light' });
-  const [selectedCountry, setSelectedCountry] = useState('UAE');
+  // const [selectedCountry, setSelectedCountry] = useState('UAE');
   const appRef = useRef<HTMLDivElement>(null);
   
   // Smooth scroll setup
@@ -104,8 +104,6 @@ function App() {
       <MainLayout
         theme={theme}
         onThemeToggle={toggleTheme}
-        selectedCountry={selectedCountry}
-        onCountryChange={setSelectedCountry}
       >
         <Routes>
           {/* Main routes */}
