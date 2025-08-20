@@ -1277,7 +1277,7 @@ print_r($data);
           title: 'Get Bank Master',
           method: 'GET',
           path: '/raas/masters/v1/banks',
-          description: 'Retrieve bank details by ID',
+          description: 'Bank API returns the list of banks available in the country.',
           requestHeaders: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer {{access_token}}'
@@ -1877,7 +1877,7 @@ console.log(data);`
           title: 'Get Branch By Id',
           method: 'GET',
           path: '/raas/masters/v1/banks/{bank_id}/branches/{branch_id}',
-          description: 'Retrieve branch details by ID',
+          description: 'Bank Branch by Id API returns the details of bank-branch with the given bank_id and branch_id',
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -2135,7 +2135,7 @@ console.log(data);`
           title: 'Branch Search',
           method: 'GET',
           path: '/raas/masters/v1/branches/search',
-          description: 'Search for branches by name or other criteria',
+          description: 'Branch Search API is used to get detailed information about branch with iso, routing or sort codes',
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
@@ -2416,7 +2416,7 @@ console.log(data);`
           title: 'Account Validation',
           method: 'POST',
           path: '/raas/masters/v1/account/validate',
-          description: 'Validate bank account details',
+          description: 'Validate the account number length',
           requestHeaders: {
             'Content-Type': 'application/json',
             'sender': 'testagentae',
