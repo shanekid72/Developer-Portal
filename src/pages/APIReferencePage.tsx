@@ -7160,17 +7160,55 @@ const APIReferencePage = ({ theme }: APIReferencePageProps) => {
         // For token endpoint, convert JSON to form data
         if (endpoint.path.includes('/auth/realms/cdp/protocol/openid-connect/token')) {
           try {
+            console.log('🔍 Debug: Parsing JSON for auth endpoint:', requestBody);
             const bodyObj = JSON.parse(requestBody);
+            console.log('🔍 Debug: Parsed body object:', bodyObj);
+            console.log('🔍 Debug: grant_type value:', bodyObj.grant_type);
+            
+            // Ensure all required fields are present
+            const requiredFields = ['username', 'password', 'grant_type', 'client_id', 'client_secret'];
+            const missingFields = requiredFields.filter(field => !bodyObj[field]);
+            
+            if (missingFields.length > 0) {
+              console.error('❌ Missing required fields:', missingFields);
+              return JSON.stringify({
+                status: 'error',
+                message: 'Missing required fields for authentication',
+                missing_fields: missingFields
+              }, null, 2);
+            }
+            
             const formData = new URLSearchParams();
             Object.entries(bodyObj).forEach(([key, value]) => {
+              console.log(`🔍 Debug: Adding form param ${key} = ${value}`);
               formData.append(key, String(value ?? ''));
             });
+            
+            const formDataString = formData.toString();
+            console.log('🔍 Debug: Final form data string:', formDataString);
+            console.log('🔍 Debug: Form data includes grant_type:', formDataString.includes('grant_type'));
+            
             requestHeaders.set('Content-Type', 'application/x-www-form-urlencoded');
-            options.body = formData.toString();
-          } catch (e) {
-            // If not valid JSON, assume already urlencoded string
+            options.body = formDataString;
+            console.log('🔍 Debug: Final request body set:', options.body);
+          } catch (e: unknown) {
+            console.error('❌ Error parsing JSON for auth endpoint:', e);
+            console.error('❌ Error details:', e instanceof Error ? e.message : 'Unknown error');
+            
+            // Fallback: try to create a basic form data string
+            console.log('🔄 Attempting fallback form data creation...');
+            const fallbackFormData = new URLSearchParams();
+            fallbackFormData.append('username', 'testagentae');
+            fallbackFormData.append('password', 'Admin@123');
+            fallbackFormData.append('grant_type', 'password');
+            fallbackFormData.append('client_id', 'cdp_app');
+            fallbackFormData.append('client_secret', 'mSh18BPiMZeQqFfOvWhgv8wzvnNVbj3Y');
+            
+            const fallbackString = fallbackFormData.toString();
+            console.log('🔄 Fallback form data string:', fallbackString);
+            
             requestHeaders.set('Content-Type', 'application/x-www-form-urlencoded');
-            options.body = requestBody;
+            options.body = fallbackString;
           }
         } else {
           // For other endpoints, use JSON
